@@ -16,6 +16,7 @@ import { MailModule } from "@/mail/mail.module";
             global: true,
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
+                global: true,
                 secret: config.getOrThrow("ACCESS_SECRET"),
                 signOptions: { expiresIn: 900 }
              })

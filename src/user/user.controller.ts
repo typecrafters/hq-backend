@@ -1,24 +1,38 @@
-import  { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from "@nestjs/common";
-import  { UserService } from "./user.service";
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { UserService } from "./user.service";
 import { User } from "@/common/decorator/user.decorator";
-
+import type { PaginationParams } from "@/common/dto/pagination-params.dto";
+import { ProtectedRoute } from "@/auth/protected-route.guard";
+import { RequiresPermission } from "@/common/decorator/requires-permission.decorator";
+import type { InviteUserRequest } from "./dto/invite-user-request.dto";
 
 @Controller("users")
 export class UserController {
     constructor(private readonly userService: UserService) { }
 
     @Get()
-    public listUsers(@Query("page", ParseIntPipe) page: number, @Query("limit", ParseIntPipe) limit: number) {
-        
+    @UseGuards(ProtectedRoute)
+    @RequiresPermission("list:user")
+    public async listUsers(@Query() params: PaginationParams) {
+        return await this.userService.list(params.page, params.limit);
     }
 
     @Get(":id")
-    public getUser(@Param("id") id: string) {
-        
+    @UseGuards(ProtectedRoute)
+    public async getUser(@Param("id") id: string) {
+        return await this.userService.getById(id);
+    }
+
+    @Get("me")
+    @UseGuards(ProtectedRoute)
+    public async getUserProfile(@User("id") id: string) {
+        return await this.userService.getById(id);
     }
 
     @Post("invite")
-    public inviteUser(@Body() body: string,  @User("id") id: string, @User("permissions") permissions: string) {
-        
+    @UseGuards(ProtectedRoute)
+    @RequiresPermission("create:user")
+    public async inviteUser(@Body() body: InviteUserRequest, @User("id") id: string) {
+        return await this.userService.create(body.firstName, body.lastName, body.email, body.permissions);
     }
 }

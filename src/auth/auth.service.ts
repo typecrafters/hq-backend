@@ -10,6 +10,7 @@ import { randomUUID } from "node:crypto";
 import type { AccessClaims } from "@/common/interface/access-claims.interface";
 import { VerificationTokenService } from "@/verification-token/verification-token.service";
 import { MailService } from "@/mail/mail.service";
+import type { RefreshClaims } from "@/common/interface/refresh-claims.interface";
 
 @Injectable()
 export class AuthService {
@@ -63,6 +64,92 @@ export class AuthService {
         );
 
         return { accessToken, refreshToken };
+    }
+
+    public async refreshSession(
+        refreshToken: string | undefined,
+        userAgent: string,
+        ipAddress: string,
+    ) {
+        const unauthorized = new UnauthorizedException("Unauthorized.");
+        if (refreshToken == null || refreshToken.length === 0) throw unauthorized;
+
+        let claims: RefreshClaims;
+
+        try {
+            claims = await this.jwtService.verifyAsync<RefreshClaims>(
+                refreshToken,
+                { secret: this.config.getOrThrow("REFRESH_SECRET") },
+            );
+        } catch {
+            throw unauthorized;
+        }
+
+        if (claims.jti == null || claims.id == null) throw unauthorized;
+
+        const session = await this.refreshTokenRepository.findOneBy({
+            jti: claims.jti,
+            sub: claims.id,
+        });
+        if (session == null) throw unauthorized;
+        if (session.expiresAt.getTime() <= Date.now()) {
+            await this.refreshTokenRepository.deleteOne({ jti: session.jti });
+            throw unauthorized;
+        }
+
+        if (
+            session.userAgent !== userAgent ||
+            session.ipAddress !== ipAddress
+        ) {
+            await this.refreshTokenRepository.deleteOne({ jti: session.jti });
+            throw unauthorized;
+        }
+
+        const user = await this.userService.getById(claims.id);
+        if (user == null) {
+            await this.refreshTokenRepository.deleteOne({ jti: session.jti });
+            throw unauthorized;
+        }
+
+        const payload = {
+            id: user.id.toString(),
+            email: user.email,
+            permissions: user.permissions,
+        } satisfies AccessClaims;
+
+        const accessToken = await this.jwtService.signAsync(payload);
+
+        const ttl = Math.floor(
+            (session.expiresAt.getTime() - Date.now()) / 1_000,
+        );
+        if (ttl <= 0) {
+            await this.refreshTokenRepository.deleteOne({ jti: session.jti });
+            throw unauthorized;
+        }
+
+        const newJti = randomUUID();
+        const newRefreshToken = await this.jwtService.signAsync(payload, {
+            secret: this.config.getOrThrow("REFRESH_SECRET"),
+            expiresIn: ttl,
+            jwtid: newJti,
+        });
+
+        await this.refreshTokenRepository.deleteOne({ jti: session.jti });
+        await this.refreshTokenRepository.save(
+            this.refreshTokenRepository.create({
+                sub: user.id.toString(),
+                jti: newJti,
+                expiresAt: new Date(Date.now() + ttl * 1_000),
+                ipAddress,
+                userAgent,
+            }),
+        );
+
+        return {
+            accessToken,
+            refreshToken: newRefreshToken,
+            refreshTokenMaxAge: ttl * 1_000,
+        };
     }
 
     public async verifyEmail(sub: string, token: string) {
