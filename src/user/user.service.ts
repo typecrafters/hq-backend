@@ -1,17 +1,23 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MongoRepository } from "typeorm";
 import { User } from "./user.entity";
 import { ObjectId } from "mongodb";
 import { UserStatus } from "./dto/user-status.enum";
 import { ColorScheme } from "./dto/color-scheme.enum";
-import type { FileService } from "@/file/file.service";
+import { FileService } from "@/file/file.service";
+import { MailService } from "@/mail/mail.service";
+import { VerificationTokenService } from "@/verification-token/verification-token.service";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(User) private readonly userRepository: MongoRepository<User>,
-        private readonly fileService: FileService
+        private readonly fileService: FileService,
+        private readonly mailService: MailService,
+        private readonly tokenService: VerificationTokenService,
+        private readonly config: ConfigService
     ) { }
 
     public async list(page: number, limit: number): Promise<Array<User>> {
@@ -26,7 +32,15 @@ export class UserService {
         }
     }
 
+    public async existsByEmail(email: string): Promise<boolean> {
+        const result = await this.userRepository.findOneBy({ email });
+        return result !== null;
+    }
+
     public async create(firstName: string, lastName: string, email: string, permissions: string[]) {
+        if (await this.existsByEmail(email))
+            throw new BadRequestException("User with this email already exists.");
+        
         const user = this.userRepository.create({
             firstName,
             lastName,
@@ -38,15 +52,35 @@ export class UserService {
             permissions: [...new Set(permissions)]
         });
 
-        await this.userRepository.save(user);
+        const result = await this.userRepository.save(user);
+        const token = await this.tokenService.createForEmail(result.id.toString());        
+        
+        const url = new URL("/email/verify", this.config.getOrThrow("PAGE_URL"));
+        url.searchParams.set("sub", result.id.toString());
+        url.searchParams.set("token", token);
+
+        await this.mailService.renderAndSend(email, "Confirm your email addresss", "verify-email.ejs", {
+            firstName: result.firstName,
+            url: url.toString()
+        });
     }
 
-    public async getById(id: string): Promise<User | null> {
-        return await this.userRepository.findOneBy({ id: new ObjectId(id) });
+    public async getById(id: string): Promise<User> {
+        const user = await this.userRepository.findOneBy({ id: new ObjectId(id) });
+
+        if (user === null) throw new NotFoundException("User not found.");
+
+        user.profilePictureUrl = await this.fileService.getSignedUrl(user?.profilePictureUrl);
+        return user;
     }
 
     public async getByEmail(email: string): Promise<User | null> {
-        return await this.userRepository.findOneBy({ email });
+        const user = await this.userRepository.findOneBy({ email });
+
+        if (user === null) throw new NotFoundException("User not found.");
+
+        user.profilePictureUrl = await this.fileService.getSignedUrl(user?.profilePictureUrl);
+        return user;
     }
 
     public async update(id: string, user: Partial<User>): Promise<void> {

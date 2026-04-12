@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { type Transporter } from "nodemailer";
-import * as ejs from "ejs";
+import ejs from "ejs";
 import { TRANSPORTER } from "./constants";
 import path from "node:path";
 

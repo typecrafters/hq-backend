@@ -5,7 +5,7 @@ import { UpdateProjectRequest } from "./dto/update-project-request.dto";
 import { User } from "@/common/decorator/user.decorator";
 import { ProtectedRoute } from "@/auth/protected-route.guard";
 
-@Controller("project")
+@Controller("projects")
 export class ProjectController {
     constructor(private readonly projectService: ProjectService) { }
 

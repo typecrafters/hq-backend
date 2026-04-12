@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { Column, CreateDateColumn, Entity, Index, ObjectIdColumn, UpdateDateColumn } from "typeorm";
+import type { ColorScheme } from "./dto/color-scheme.enum";
 
 @Entity("users")
 export class User {
@@ -26,7 +27,7 @@ export class User {
     public status!: string;
 
     @Column()
-    public preferredTheme!: string;
+    public preferredTheme!: ColorScheme;
 
     @Column()
     public permissions!: string[];

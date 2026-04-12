@@ -1,9 +1,9 @@
-import { Body, Controller, Get, HttpCode, Post, Query, Res } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Post, Query, Req, Res } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginRequest } from "./dto/login-request.dto";
 import { ForgotPasswordRequest } from "./dto/forgot-password-request";
 import { ResetPasswordRequest } from "./dto/reset-password-request.dto";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import { ClientInfo } from "@/common/decorator/client-info.decorator";
 import { User } from "@/common/decorator/user.decorator";
 
@@ -42,8 +42,13 @@ export class AuthController {
     }
 
     @Get("refresh")
-    public async refreshSession() {
-
+    public async refreshSession(
+        @Req() request: Request, 
+        @ClientInfo("userAgent") userAgent: string, 
+        @ClientInfo("ipAddress") ipAddress: string
+    ) {
+        const refreshToken = request.cookies["refreshToken"];
+        return await this.authService.refreshSession(refreshToken, userAgent, ipAddress);
     }
 
     @HttpCode(200)
