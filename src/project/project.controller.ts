@@ -4,37 +4,41 @@ import { CreateProjectRequest } from "./dto/create-project-request.dto";
 import { UpdateProjectRequest } from "./dto/update-project-request.dto";
 import { User } from "@/common/decorator/user.decorator";
 import { ProtectedRoute } from "@/auth/protected-route.guard";
+import { RequiresPermission } from "@/common/decorator/requires-permission.decorator";
+import type { PaginationParams } from "@/common/dto/pagination-params.dto";
 
 @Controller("projects")
 export class ProjectController {
     constructor(private readonly projectService: ProjectService) { }
 
     @Get()
-    public listProjects(@Query("page", ParseIntPipe) page: number, @Query("limit", ParseIntPipe) limit: number) {
-
+    public async listProjects(@Query() params: PaginationParams) {
+        return await this.projectService.list(params.page, params.limit);
     }
 
     @Get(":id")
-    public getProject(@Param("id") id: string) {
-
+    public async getProject(@Param("id") id: string) {
+        return await this.projectService.get(id);
     }
 
     @Post()
     @UseGuards(ProtectedRoute)
-    public createProject(@Body() request: CreateProjectRequest, @User("id") id: string, @User("permissions") permissions: string[]) {
-        if (!permissions.includes("create:project")) throw new UnauthorizedException("Unauthorized.");
-        const project = this.projectService.create(request, id);
+    @RequiresPermission("create:project")
+    public async createProject(@Body() request: CreateProjectRequest, @User("id") id: string) {
+        await this.projectService.create(request, id);
     }
 
     @Patch(":id")
     @UseGuards(ProtectedRoute)
-    public updateProject(@Param("id") id: string, @Body() request: UpdateProjectRequest) {
-
+    @RequiresPermission("update:project")
+    public async updateProject(@Param("id") id: string, @Body() request: UpdateProjectRequest) {
+        await this.projectService.update(id, request);
     }
 
     @Delete(":id")
     @UseGuards(ProtectedRoute)
-    public deleteProject(@Param("id") id: string) {
-
+    @RequiresPermission("delete:project")
+    public async deleteProject(@Param("id") id: string) {
+        await this.projectService.delete(id);
     }
 }

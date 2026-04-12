@@ -36,6 +36,7 @@ export class AuthController {
         return { accessToken }
     }
 
+    @HttpCode(200)
     @Post("email/verify")
     public async verifyAccount(@Query("sub") sub: string, @Query("token") token: string) {
         await this.authService.verifyEmail(sub, token);

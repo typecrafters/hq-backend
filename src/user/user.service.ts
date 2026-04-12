@@ -21,12 +21,20 @@ export class UserService {
     ) { }
 
     public async list(page: number, limit: number): Promise<Array<User>> {
+        const maxLimit = 24;
+        const clamp = Math.min(limit, maxLimit);
+
         try {
-            return await this.userRepository.find({
-                skip: limit * (page - 1),
-                take: limit,
+            const users =  await this.userRepository.find({
+                skip: clamp * (page - 1),
+                take: clamp,
                 order: { createdAt: -1 }
-            });
+            }); 
+
+            return await Promise.all(users.map(async u => {
+                u.profilePictureUrl = await this.fileService.getSignedUrl(u.profilePictureUrl);
+                return u;
+            }));
         } catch {
             throw new InternalServerErrorException("Failed to fetch project list.");
         }

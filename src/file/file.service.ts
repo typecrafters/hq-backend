@@ -63,6 +63,9 @@ export class FileService {
         const ext = path.extname(body.filename) || ".bin";
         fragments.push(body.ownerId, `${randomUUID()}${ext}`);
 
+        console.log({ body });
+        console.log({ fragments });
+
         Key = path.posix.join(...fragments);
 
         const url = await getSignedUrl(this.s3, new PutObjectCommand({
