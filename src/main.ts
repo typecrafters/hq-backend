@@ -10,13 +10,19 @@ import cookieParser from "cookie-parser";
 (async () => {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-    app.enableCors();
     app.setGlobalPrefix("api");
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
     app.use(cookieParser());
     app.set("trust proxy", true);
-
+    
     const config = app.get(ConfigService);
+    
+    app.enableCors({
+        origin: config.getOrThrow<string>("ALLOWED_ORIGINS").split(",").map(o => o.trim()),
+        methods: "*",
+        allowedHeaders: "*",
+        credentials: true
+    });
 
     const host = config.getOrThrow("APP_HOST");
     const port = config.getOrThrow("APP_PORT");
