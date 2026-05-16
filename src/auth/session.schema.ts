@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import type { HydratedDocument, ObjectId, Types } from "mongoose";
+import { Types, type HydratedDocument } from "mongoose";
 
 @Schema({ timestamps: true })
 export class Session {
     @Prop()
-    public id!: Types.ObjectId;
+    public _id!: Types.ObjectId;
 
     @Prop({ unique: true })
     public jssessid!: string;

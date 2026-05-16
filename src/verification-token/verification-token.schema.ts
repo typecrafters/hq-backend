@@ -1,12 +1,12 @@
 
 import { TokenType } from "./dto/token-type.enum";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import type { HydratedDocument, Types } from "mongoose";
+import { Types, type HydratedDocument } from "mongoose";
 
 @Schema({ timestamps: true })
 export class VerificationToken {
     @Prop()
-    public id!: Types.ObjectId;
+    public _id!: Types.ObjectId;
 
     @Prop({ unique: true })
     public hash!: string;
@@ -14,7 +14,7 @@ export class VerificationToken {
     @Prop()
     public uid!: string;
 
-    @Prop()
+    @Prop({ type: String, enum: TokenType })
     public type!: TokenType;
 
     @Prop({ expires: 0 })

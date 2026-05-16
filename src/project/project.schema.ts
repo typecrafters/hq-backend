@@ -1,11 +1,11 @@
-import type { HydratedDocument, Types } from "mongoose";
 import { ProjectStatus } from "./dto/project-status.enum";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Types, type HydratedDocument } from "mongoose";
 
 @Schema({ timestamps: true })
 export class Project {
     @Prop()
-    public id!: Types.ObjectId;
+    public _id!: Types.ObjectId;
 
     @Prop()
     public projectName!: string;
@@ -13,7 +13,7 @@ export class Project {
     @Prop()
     public thumbnailUrl!: string;
 
-    @Prop()
+    @Prop({ type: String, enum: ProjectStatus })
     public status!: ProjectStatus;
 
     @Prop()

@@ -1,11 +1,11 @@
-import type { MessageStatus } from "./dto/message-status.enum";
+import { MessageStatus } from "./dto/message-status.enum";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import type { HydratedDocument, Types } from "mongoose";
+import { Types, type HydratedDocument } from "mongoose";
 
 @Schema({ timestamps: true })
 export class Message {
     @Prop()
-    public id!: Types.ObjectId;
+    public _id!: Types.ObjectId;
 
     @Prop()
     public firstName!: string;
@@ -22,7 +22,7 @@ export class Message {
     @Prop()
     public message!: string;
     
-    @Prop()
+    @Prop({ type: String, enum: MessageStatus })
     public status!: MessageStatus;
 
     @Prop()

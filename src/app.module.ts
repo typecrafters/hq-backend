@@ -14,7 +14,7 @@ import { MongooseModule } from "@nestjs/mongoose";
         MongooseModule.forRootAsync({
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
-                uri: `mongodb://${config.getOrThrow("MONGO_HOST")}:${config.getOrThrow("MONGO_PORT") || 27017}/${config.getOrThrow("MONGO_NAME")}`
+                uri: `mongodb://${config.getOrThrow("MONGO_HOST")}:${config.getOrThrow("MONGO_PORT")}/${config.getOrThrow("MONGO_NAME")}`
             })
         }),
         MemberModule,

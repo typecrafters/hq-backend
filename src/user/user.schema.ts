@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import type { UserStatus } from "./dto/user-status.enum";
-import type { HydratedDocument, Types } from "mongoose";
+import { UserStatus } from "./dto/user-status.enum";
+import { Types, type HydratedDocument } from "mongoose";
 
 @Schema({ timestamps: true })
 export class User {
@@ -22,7 +22,7 @@ export class User {
     @Prop()
     public profilePictureUrl!: string;
 
-    @Prop()
+    @Prop({ type: String, enum: UserStatus })
     public status!: UserStatus;
 
     @Prop()
