@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common";
 import { ProjectModule } from "./project/project.module";
-import { MemberModule } from "./member/member.module";
 import { MessageModule } from "./message/message.module";
 import { AuthModule } from "./auth/auth.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
@@ -17,7 +16,6 @@ import { MongooseModule } from "@nestjs/mongoose";
                 uri: `mongodb://${config.getOrThrow("MONGO_HOST")}:${config.getOrThrow("MONGO_PORT")}/${config.getOrThrow("MONGO_NAME")}`
             })
         }),
-        MemberModule,
         MessageModule,
         AuthModule,
         ProjectModule,

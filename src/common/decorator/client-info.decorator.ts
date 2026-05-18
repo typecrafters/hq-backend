@@ -1,18 +1,24 @@
 import { createParamDecorator, type ExecutionContext } from "@nestjs/common";
 
-type ClientInfoType = "ipAddress" | "userAgent";
+export class ClientInfo {
+    public ipAddress!: string;
+    public userAgent!: string;
+}
 
-export const ClientInfo = createParamDecorator((data: ClientInfoType | undefined, ctx: ExecutionContext) => {
-    const req = ctx.switchToHttp().getRequest();
+export const Client = createParamDecorator((context: ExecutionContext) => {
+    const request = context.switchToHttp().getRequest();
 
     const ipAddress =
-      req.ip ||
-      req.headers['x-forwarded-for']?.toString().split(',')[0] ||
-      req.socket?.remoteAddress;
+        request.ip ||
+        request.socket?.remoteAddress ||
+        "";
 
-    const userAgent = req.headers['user-agent'] ?? '';
+    const userAgent = request.get("user-agent") || "";
 
-    const client: Record<ClientInfoType, string> = { ipAddress, userAgent };
+    const clientInfo = new ClientInfo();
 
-    return data ? client[data] : client;
+    clientInfo.ipAddress = ipAddress;
+    clientInfo.userAgent = userAgent;
+
+    return clientInfo;
 });

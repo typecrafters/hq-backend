@@ -17,7 +17,10 @@ export class User {
     public email!: string;
 
     @Prop()
-    public password!: string;
+    public role!: string;
+
+    @Prop()
+    public password!: string | null;
 
     @Prop()
     public profilePictureUrl!: string;
