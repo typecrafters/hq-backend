@@ -5,7 +5,8 @@ export class ClientInfo {
     public userAgent!: string;
 }
 
-export const Client = createParamDecorator((context: ExecutionContext) => {
+export const Client = createParamDecorator(
+    (data: keyof ClientInfo | undefined, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
 
     const ipAddress =
@@ -20,5 +21,5 @@ export const Client = createParamDecorator((context: ExecutionContext) => {
     clientInfo.ipAddress = ipAddress;
     clientInfo.userAgent = userAgent;
 
-    return clientInfo;
+    return data ? clientInfo[data] : clientInfo;
 });

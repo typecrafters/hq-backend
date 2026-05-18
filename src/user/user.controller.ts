@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post } from "@nestjs/common";
-import type { UserService } from "./user.service";
+import { UserService } from "./user.service";
 import type { CreateUserRequest } from "./dto/create-user-request.dto";
+import { Pag, Pagination } from "@/common/decorator/pagination.decorator";
 
 @Controller("users")
 export class UserController {
@@ -12,7 +13,9 @@ export class UserController {
     }
 
     @Get()
-    public async listUsers() {
-        
+    public async listUsers(@Pag("page") page: number, @Pag("limit") limit: number) {
+        const [users, total] = await this.userService.list(page, limit)
+
+        return users;
     }
 }

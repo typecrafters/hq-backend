@@ -1,10 +1,10 @@
-import { Body, Controller, Get, HttpCode, Post, Query, Req, Res } from "@nestjs/common";
+import { Body, Controller, HttpCode, Post, Query, Res } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginRequest } from "./dto/login-request.dto";
 import { ForgotPasswordRequest } from "./dto/forgot-password-request";
 import { ResetPasswordRequest } from "./dto/reset-password-request.dto";
-import type { Request, Response } from "express";
-import { ClientInfo } from "@/common/decorator/client-info.decorator";
+import type { Response } from "express";
+import { Client } from "@/common/decorator/client-info.decorator";
 import { User } from "@/common/decorator/user.decorator";
 
 @Controller("auth")
@@ -14,11 +14,11 @@ export class AuthController {
     @Post("login")
     public async login(
         @Body() body: LoginRequest,
-        @ClientInfo("ipAddress") ipAddress: string,
-        @ClientInfo("userAgent") userAgent: string,
+        @Client("ipAddress") ipAddress: string,
+        @Client("userAgent") userAgent: string,
         @Res({ passthrough: true }) response: Response
     ) {
-        const { accessToken, refreshToken } = await this.authService.authenticateUser(
+        const jssessid = await this.authService.authenticateUser(
             body.email,
             body.password,
             body.rememberMe,
@@ -26,30 +26,20 @@ export class AuthController {
             ipAddress
         );
 
-        response.cookie("refreshToken", refreshToken, {
+        response.cookie("jssessid", jssessid, {
             httpOnly: true,
             secure: true,
             sameSite: "none",
             maxAge: (body.rememberMe ? 90 : 7) * 86_400 * 1_000
         });
 
-        return { accessToken }
+        return;
     }
 
     @HttpCode(200)
     @Post("email/verify")
     public async verifyAccount(@Query("sub") sub: string, @Query("token") token: string) {
         await this.authService.verifyEmail(sub, token);
-    }
-
-    @Get("refresh")
-    public async refreshSession(
-        @Req() request: Request, 
-        @ClientInfo("userAgent") userAgent: string, 
-        @ClientInfo("ipAddress") ipAddress: string
-    ) {
-        const refreshToken = request.cookies["refreshToken"];
-        return await this.authService.refreshSession(refreshToken, userAgent, ipAddress);
     }
 
     @HttpCode(200)
@@ -70,13 +60,8 @@ export class AuthController {
     }
 
     @Post("logout")
-    public async logout(
-        @User("id") id: string, 
-        @ClientInfo("ipAddress") 
-        ipAddress: string, 
-        @Res() response: Response
-    ) {
-        await this.authService.revokeUserSession(id, ipAddress);
-        response.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: "none" });
+    public async logout(@User("id") id: string,  @Res({ passthrough: true }) response: Response) {
+        await this.authService.revokeUserSessions(id);
+        response.clearCookie("jssessid", { httpOnly: true, secure: true, sameSite: "none", path: "/" });
     }
 }

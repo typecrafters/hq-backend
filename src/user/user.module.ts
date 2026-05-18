@@ -5,6 +5,7 @@ import { FileModule } from "@/file/file.module";
 import { MailModule } from "@/mail/mail.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { User, UserSchema } from "./user.schema";
+import { VerificationTokenModule } from "@/verification-token/verification-token.module";
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { User, UserSchema } from "./user.schema";
         }]),
         FileModule, 
         MailModule,
+        VerificationTokenModule
     ],
     controllers: [UserController],
     providers: [UserService],
