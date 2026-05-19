@@ -4,7 +4,6 @@ import { Types, type HydratedDocument } from "mongoose";
 
 @Schema({ timestamps: true })
 export class Project {
-    @Prop()
     public _id!: Types.ObjectId;
 
     @Prop()

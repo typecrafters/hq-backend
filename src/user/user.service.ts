@@ -25,7 +25,7 @@ export class UserService {
         return await bcrypt.hash(password, 10);
     }
 
-    public async list(page: number, limit: number): Promise<[Array<User>, number]> {
+    public async list(page: number, limit: number): Promise<[Array<User>, number, number, number]> {
         const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
         const safeLimit = Number.isFinite(limit) ? Math.floor(limit) : 10;
         const clampedLimit = Math.min(100, Math.max(1, safeLimit));
@@ -39,9 +39,9 @@ export class UserService {
         const users = await Promise.all(result.map(async u => {
             u.profilePictureUrl = await this.fileService.getSignedUrl(u.profilePictureUrl);
             return u;
-        }))
+        }));
 
-        return [users, total];
+        return [users, skip, clampedLimit, total];
     }
 
     public async get(id: string): Promise<Optional<User>> {
@@ -70,6 +70,8 @@ export class UserService {
             url,
             firstName: request.firstName
         });
+
+        return user._id.toString();
     }
 
     public async validateEmail(uid: string, token: string): Promise<boolean> {

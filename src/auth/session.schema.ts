@@ -3,7 +3,6 @@ import { Types, type HydratedDocument } from "mongoose";
 
 @Schema({ timestamps: true })
 export class Session {
-    @Prop()
     public _id!: Types.ObjectId;
 
     @Prop({ unique: true })

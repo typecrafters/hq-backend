@@ -6,19 +6,21 @@ import { AppModule } from "./app.module";
 import { ConfigService } from "@nestjs/config";
 import { type NestExpressApplication } from "@nestjs/platform-express";
 import cookieParser from "cookie-parser";
+import { GlobalExceptionFilter } from "./common/filter/global-exception.filter";
 
 (async () => {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
     app.setGlobalPrefix("api");
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.useGlobalFilters(new GlobalExceptionFilter());
     app.use(cookieParser());
     app.set("trust proxy", true);
     
     const config = app.get(ConfigService);
     
     app.enableCors({
-        origin: config.getOrThrow<string>("ALLOWED_ORIGINS").split(",").map(o => o.trim()),
+        origin: config.getOrThrow<string>("ALLOWED_ORIGINS").split(",").filter(Boolean).map(o => o.trim()),
         methods: "*",
         allowedHeaders: "*",
         credentials: true
