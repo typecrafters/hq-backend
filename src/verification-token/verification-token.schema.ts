@@ -5,7 +5,6 @@ import { Types, type HydratedDocument } from "mongoose";
 
 @Schema({ timestamps: true })
 export class VerificationToken {
-    @Prop()
     public _id!: Types.ObjectId;
 
     @Prop({ unique: true })

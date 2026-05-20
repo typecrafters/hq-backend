@@ -100,6 +100,7 @@ export class AuthController {
         }
     }
 
+    @HttpCode(200)
     @Post("logout")
     public async logout(@User("id") id: string, @Res({ passthrough: true }) response: Response) {
         try {
