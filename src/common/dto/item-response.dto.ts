@@ -1,29 +1,13 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, ValidateNested } from "class-validator";
+import { AppResponse } from "./app-response.dto";
 import type { ResponseMetadata } from "./response-metadata.dto";
-import { Type } from "class-transformer";
 
-export class ItemResponse<T> {
-    @Min(100)
-    @Max(599)
-    @IsNotEmpty()
-    @IsInt()
-    public status!: number;
 
-    @IsString()
-    @IsNotEmpty()
-    public message!: string;
-
-    @ValidateNested()
-    @IsNotEmpty()
+export class ItemResponse<T> extends AppResponse {
     public data!: T;
-
-    @ValidateNested()
-    @Type(() => Object)
-    @IsOptional()
     public meta?: ResponseMetadata;
 
     constructor(status?: number) {
-        if (status) this.status = status;
+        super(status);
     }
 
     public static OK<T>(): ItemResponse<T> {

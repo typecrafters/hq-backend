@@ -1,22 +1,10 @@
-import { IsInt, IsNotEmpty, IsString, Max, Min } from "class-validator";
+import { AppResponse } from "./app-response.dto";
 
-export class ErrorResponse {
-    @Min(100)
-    @Max(599)
-    @IsNotEmpty()
-    @IsInt()
-    public status!: number;
-
-    @IsString()
-    @IsNotEmpty()
-    public message!: string;
-
-    @IsString()
-    @IsNotEmpty()
+export class ErrorResponse extends AppResponse {
     public error!: string;
 
     constructor(status?: number) {
-        if (status) this.status = status;
+        super(status);
     }
 
     public static BadRequest(): ErrorResponse {

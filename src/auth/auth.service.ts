@@ -101,20 +101,6 @@ export class AuthService {
         await this.sessionModel.deleteMany({ uid: new Types.ObjectId(uid) });
     }
 
-    // --- Account creation flow ---
-
-    public async sendVerificationEmail(uid: string, email: string, firstName: string): Promise<void> {
-        const token = await this.tokenService.createForEmail(uid);
-        const url = new URL("/hq/users/email/verify", this.config.getOrThrow<string>("PAGE_URL"));
-        url.searchParams.set("uid", uid);
-        url.searchParams.set("token", token);
-
-        await this.mailService.renderAndSend(email, "Verify your email address.", "verify-email.ejs", {
-            url: url.toString(),
-            firstName,
-        });
-    }
-
     public async activateUserAccount(
         uid: string,
         token: string,
@@ -137,8 +123,6 @@ export class AuthService {
         await this.tokenService.consumeEmailToken(token, uid);
     }
 
-    // --- Email verification flow (existing users) ---
-
     public async verifyEmail(uid: string, token: string): Promise<void> {
         const unauthorized = new UnauthorizedException("Unauthorized.");
 
@@ -150,8 +134,6 @@ export class AuthService {
         await this.userService.setStatus(uid, UserStatus.Active);
         await this.tokenService.consumeEmailToken(token, uid);
     }
-
-    // --- Password reset flow ---
 
     public async sendPasswordResetLink(email: string): Promise<void> {
         const optionalUser = await this.userService.getByEmail(email);

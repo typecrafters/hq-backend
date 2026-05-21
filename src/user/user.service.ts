@@ -7,12 +7,18 @@ import { FileService } from "@/file/file.service";
 import { UserStatus } from "./dto/user-status.enum";
 import { Optional } from "@/common/class/optional";
 import bcrypt from "bcrypt";
+import { MailService } from "@/mail/mail.service";
+import { VerificationTokenService } from "@/verification-token/verification-token.service";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
         private readonly fileService: FileService,
+        private readonly config: ConfigService,
+        private readonly tokenService: VerificationTokenService,
+        private readonly mailService: MailService,
     ) { }
 
     private async hashPassword(password: string): Promise<string> {
@@ -53,12 +59,24 @@ export class UserService {
             email: request.email,
             role: request.role,
             password: null,
+            showOnPage: request.showOnPage,
             profilePictureUrl: this.fileService.placeholder,
             status: UserStatus.Unverified,
             permissions: request.permissions,
         });
+        
+        const uid = user._id.toString();
+        const token = await this.tokenService.createForEmail(uid);
+        const url = new URL("/hq/users/email/verify", this.config.getOrThrow<string>("PAGE_URL"));
+        url.searchParams.set("uid", uid);
+        url.searchParams.set("token", token);
 
-        return user._id.toString();
+        await this.mailService.renderAndSend(user.email, "Verify your email address.", "verify-email.ejs", {
+            url: url.toString(),
+            firstName: user.firstName
+        });
+
+        return uid;
     }
 
     public async activateAccount(uid: string, password: string): Promise<void> {

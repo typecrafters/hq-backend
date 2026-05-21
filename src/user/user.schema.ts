@@ -22,6 +22,9 @@ export class User {
     public password!: string | null;
 
     @Prop()
+    public showOnPage!: boolean;
+
+    @Prop()
     public profilePictureUrl!: string;
 
     @Prop({ type: String, enum: UserStatus })

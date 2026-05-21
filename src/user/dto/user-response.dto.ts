@@ -6,9 +6,12 @@ interface UserResponseArgs {
 	firstName: string;
 	lastName: string;
 	email: string;
+	password: boolean;
 	role: string;
 	profilePictureUrl: string;
+	permissions: string[];
 	status: UserStatus;
+	showOnPage: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -18,9 +21,12 @@ export class UserResponse {
 	public firstName!: string;
 	public lastName!: string;
 	public email!: string;
+	public password!: boolean;
 	public role!: string;
 	public profilePictureUrl!: string;
+	public permissions!: string[]
 	public status!: UserStatus;
+	public showOnPage!: boolean;
 	public createdAt!: Date;
 	public updatedAt!: Date;
 
@@ -29,8 +35,11 @@ export class UserResponse {
 		firstName,
 		lastName,
 		email,
+		password,
+		showOnPage,
 		role,
 		profilePictureUrl,
+		permissions,
 		status,
 		createdAt,
 		updatedAt,
@@ -39,8 +48,11 @@ export class UserResponse {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
+		this.password = password;
 		this.role = role;
 		this.profilePictureUrl = profilePictureUrl;
+		this.permissions = permissions;
+		this.showOnPage = showOnPage;
 		this.status = status;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
@@ -52,8 +64,11 @@ export class UserResponse {
 			firstName: user.firstName,
 			lastName: user.lastName,
 			email: user.email,
+			password: !!user.password,
 			role: user.role,
 			profilePictureUrl: user.profilePictureUrl,
+			permissions: user.permissions,
+			showOnPage: user.showOnPage,
 			status: user.status,
 			createdAt: user.createdAt,
 			updatedAt: user.updatedAt
