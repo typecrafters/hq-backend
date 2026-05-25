@@ -92,7 +92,7 @@ export class UserService {
 
     public async updatePasswordById(id: string, password: string): Promise<void> {
         const user = await this.userModel.findById(id);
-        if (!user) throw new Error(`User ${id} not found`);
+        if (!user) throw new Error(`User '${id}' not found`);
 
         user.password = await this.hashPassword(password);
         await user.save();
