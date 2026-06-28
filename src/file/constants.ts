@@ -1,1 +1,0 @@
-export const S3_CLIENT: "s3_client" = "s3_client";
