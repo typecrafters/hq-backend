@@ -1,6 +1,5 @@
 from fastapi import APIRouter
-
-from app.schemas.request.user import User
+from app.schemas.request.create_user import CreateUser
 
 router = APIRouter(prefix='users')
 
@@ -9,5 +8,5 @@ def list_users(page: int, limit: int):
     pass
 
 @router.post('/')
-def save_user(user: User):
+def save_user(user: CreateUser):
     pass

@@ -2,7 +2,6 @@ from datetime import datetime
 from sqlalchemy import BigInteger, Identity, String, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
-from app.config.tz import est
 
 
 class User(Base):
@@ -17,5 +16,4 @@ class User(Base):
     password: Mapped[str] = mapped_column(String, nullable=True)
     profile_picture_url: Mapped[str] = mapped_column(String, nullable=True)
     show_on_page: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(tz=est))
-
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

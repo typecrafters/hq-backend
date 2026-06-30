@@ -1,1 +1,1 @@
-from app.db.session import RequiresDBSession
+from app.db.session import RequiresDBSession as RequiresDBSession
