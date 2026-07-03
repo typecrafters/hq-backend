@@ -1,4 +1,6 @@
+from typing import Any
 from datetime import datetime
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import BigInteger, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
@@ -14,3 +16,4 @@ class Session(Base):
     issued_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     revoked_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSONB, default={})

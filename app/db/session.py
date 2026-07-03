@@ -23,15 +23,3 @@ engine = create_engine(
 
 def create_db():
     Base.metadata.create_all(engine)
-
-
-def get_db_session():
-    with Session(engine) as session:
-        try:
-            yield session
-            session.commit()
-        except SQLAlchemyError as e:
-            print(e)
-            session.rollback()
-
-RequiresDBSession = Annotated[Session, Depends(get_db_session)]

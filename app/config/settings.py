@@ -12,6 +12,14 @@ class Settings(BaseSettings):
     db_user: str
     db_pass: SecretStr
 
+    smtp_host: str
+    smtp_port: int
+    smtp_user: str
+    smtp_pass: SecretStr
+    smtp_from: str
+
+    frontend_url: str
+
     def database_url(self) -> str:
         engine = f"{self.db_engine}+{self.db_driver}" if self.db_driver else self.db_engine
         return f"{engine}://{self.db_user}:{self.db_pass.get_secret_value()}@{self.db_host}:{self.db_port}/{self.db_name}"
