@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     smtp_pass: SecretStr
     smtp_from: str
 
+    s3_endpoint: str
+    s3_access_key: str
+    s3_secret_key: str
+    s3_secure: bool
+
     frontend_url: str
 
     def database_url(self) -> str:

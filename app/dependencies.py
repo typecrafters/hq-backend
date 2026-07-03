@@ -1,6 +1,8 @@
 from typing import Annotated
+from minio import Minio
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import Depends
+from app.config.settings import settings
 from app.db.session import engine
 from app.models.session import Session
 from app.repositories.password_reset_token_repository import PasswordResetTokenRepository
@@ -10,6 +12,17 @@ from app.services.auth_service import AuthService
 from app.services.crypto_service import CryptoService
 from app.services.email_service import EmailService
 from app.services.password_service import PasswordService
+
+
+def get_s3_client() -> Minio:
+    return Minio(
+        settings.s3_endpoint,
+        access_key=settings.s3_access_key,
+        secret_key=settings.s3_secret_key,
+        secure=settings.s3_secure
+    )
+
+RequiresS3 = Annotated[Minio, Depends(get_s3_client)]
 
 
 def password_service() -> type[PasswordService]:
