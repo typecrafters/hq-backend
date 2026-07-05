@@ -75,7 +75,6 @@ uv run uvicorn app.main:app --reload
 | **argon2-cffi** | Hashing de contraseñas con Argon2id (estándar OWASP). |
 | **minio** | Cliente S3 para subir/leer archivos de object storage. |
 | **pycryptodome** | Criptografía simétrica y asimétrica (AES, RSA, etc.). |
-| **uvicorn** | Servidor ASGI que corre la app FastAPI. |
 
 ### Desarrollo
 
