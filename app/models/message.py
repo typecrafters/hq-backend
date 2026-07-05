@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Identity, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
@@ -11,7 +11,7 @@ class Message(Base):
     subject: Mapped[str] = mapped_column(String, default='General inquiry')
     content: Mapped[str] = mapped_column(String, nullable=False)
     mail_to: Mapped[str] = mapped_column(String, nullable=False)
-    sent_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    sent_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     read_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     replied_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     replied_by: Mapped[int] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)

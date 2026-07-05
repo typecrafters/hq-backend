@@ -1,9 +1,11 @@
 from datetime import datetime
 from pydantic import BaseModel
 
-class ProtectedUser(BaseModel):
+from app.schemas.response.role import RoleResponse
+
+class UserWithRole(BaseModel):
     id: int
-    role_id: int
+    role: RoleResponse
     first_name: str
     last_name: str
     title: str

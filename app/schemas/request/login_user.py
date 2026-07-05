@@ -6,3 +6,4 @@ class LoginUser(BaseModel):
 
     email: str
     password: str
+    remember_me: bool

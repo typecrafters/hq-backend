@@ -1,7 +1,7 @@
 from pydantic import BaseModel
-from app.models.session import Session
-from app.models.user import User
+from app.schemas.response.session import Session
+from app.schemas.response.user_with_role import UserWithRole
 
 class Current(BaseModel):
     session: Session
-    user: User
+    user: UserWithRole
