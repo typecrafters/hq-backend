@@ -2,6 +2,7 @@ from app.models.user import User
 from app.repositories.role_repository import RoleRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.request.create_user import CreateUser
+from app.schemas.response.protected_user import ProtectedUser
 from app.services.password_service import PasswordService
 
 
@@ -33,3 +34,10 @@ class UserService:
             self.role_repo.create_role(f'{dto.title} (No Login)', dto.permissions, can_login=False)
 
         return user
+    
+    def list(self, page: int, limit: int) -> list[User]:
+        limit = max(min(limit, 100), 0)
+        offset = max(page - 1, 0) * limit
+
+    def get_by_id(self, id: int) -> User | None:
+        pass

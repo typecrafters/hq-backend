@@ -36,3 +36,8 @@ class UserRepository(Repository):
         self.db.add(user)
         self.db.flush()
         return user
+    
+    def list(self, limit: int, offset: int):
+        stmt = select(User).order_by(User.first_name, User.last_name).limit(limit).offset(offset)
+
+        return list(self.db.execute(stmt).scalars().all())

@@ -5,6 +5,7 @@ router = APIRouter(prefix='/users')
 
 @router.get('/')
 def list_users(page: int, limit: int):
+    
     pass
 
 @router.post('/')

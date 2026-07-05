@@ -4,8 +4,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
 
-class PasswordResetToken(Base):
-    __tablename__ = 'password_reset_tokens'
+class Token(Base):
+    __tablename__ = 'tokens'
 
     token_hash: Mapped[str] = mapped_column(String, primary_key=True)
     uid: Mapped[int] = mapped_column(BigInteger, nullable=False)

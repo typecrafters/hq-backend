@@ -2,7 +2,8 @@ import secrets
 from datetime import timedelta
 
 from app.config.settings import settings
-from app.repositories.password_reset_token_repository import PasswordResetTokenRepository
+from app.models.session import Session
+from app.repositories.token_repository import TokenRepository
 from app.repositories.session_repository import SessionRepository
 from app.repositories.user_repository import UserRepository
 from app.services.crypto_service import CryptoService
@@ -13,7 +14,7 @@ from app.services.password_service import PasswordService
 class AuthService:
     user_repo: UserRepository
     session_repo: SessionRepository
-    reset_token_repo: PasswordResetTokenRepository
+    token_repo: TokenRepository
     pw_service: type[PasswordService]
     crypto_service: type[CryptoService]
     email_service: type[EmailService]
@@ -26,14 +27,14 @@ class AuthService:
         self,
         user_repo: UserRepository,
         session_repo: SessionRepository,
-        reset_token_repo: PasswordResetTokenRepository,
+        token_repo: TokenRepository,
         pw_service: type[PasswordService],
         crypto_service: type[CryptoService],
         email_service: type[EmailService]
     ):
         self.user_repo = user_repo
         self.session_repo = session_repo
-        self.reset_token_repo = reset_token_repo
+        self.token_repo = token_repo
         self.pw_service = pw_service
         self.crypto_service = crypto_service
         self.email_service = email_service
@@ -56,17 +57,17 @@ class AuthService:
             return
 
         token = secrets.token_hex(32)
-        self.reset_token_repo.create(user, self.crypto_service.sha256hash(token), max_age=self.reset_token_age)
+        self.token_repo.create(user, self.crypto_service.sha256hash(token), max_age=self.reset_token_age)
 
         reset_link = f'{settings.frontend_url}/password/reset?token={token}'
         self.email_service.send_password_reset_email(user.email, reset_link)
 
     def verify_reset_token(self, token: str) -> bool:
-        reset_token = self.reset_token_repo.get_valid_by_token_hash(self.crypto_service.sha256hash(token))
+        reset_token = self.token_repo.get_valid_by_token_hash(self.crypto_service.sha256hash(token))
         return reset_token is not None
 
     def reset_password(self, token: str, new_password: str) -> bool:
-        reset_token = self.reset_token_repo.get_valid_by_token_hash(self.crypto_service.sha256hash(token))
+        reset_token = self.token_repo.get_valid_by_token_hash(self.crypto_service.sha256hash(token))
         if reset_token is None:
             return False
 
@@ -75,7 +76,9 @@ class AuthService:
             return False
 
         user.password = self.pw_service.hash(new_password)
-        self.reset_token_repo.mark_used(reset_token)
+        self.token_repo.mark_used(reset_token)
         self.session_repo.revoke_all_for_user(user.id)
         return True
-
+    
+    def get_session(self, pysessid: str) -> Session | None:
+        return self.session_repo.get_by_pysessid(pysessid)
