@@ -32,14 +32,14 @@ class UserService:
     def create(self, data: CreateUser) -> User:
         role = self.role_repo.save(Role(
             name=f'{data.first_name}_{data.last_name}_role',
-            permissions=data.permissions,
+            permissions=[p.strip().lower() for p in data.permissions],
             can_login=True,
         ))
 
         if data.create_role:
             self.role_repo.save(Role(
                 name=f'{data.first_name}_{data.last_name}#creation_pgroup',
-                permissions=data.permissions,
+                permissions=[p.strip().lower() for p in data.permissions],
                 can_login=False,
             ))
 
