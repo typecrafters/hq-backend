@@ -1,0 +1,142 @@
+# ==============================================================================
+# Project metadata (PEP 621)
+# ==============================================================================
+# Declares the project's identity, the minimum Python version, and its
+# DIRECT dependencies.  Only list packages your code imports explicitly.
+# Transitive dependencies (e.g. anyio, starlette, cffi) are resolved and
+# pinned automatically by uv inside uv.lock.
+# ==============================================================================
+[project]
+name = "hq-backend"
+version = "0.1.0"
+description = "Backend API for HQ Website"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    # Web framework — routing, request/response, OpenAPI docs, Pydantic integration.
+    "fastapi==0.138.1",
+    # SQL toolkit & ORM — models, queries, connection pooling.
+    "sqlalchemy==2.0.51",
+    # PostgreSQL driver (psycopg 3) — required by SQLAlchemy to talk to Postgres.
+    "psycopg[binary]==3.3.4",
+    # Password hashing (Argon2id).  Includes its own CFFI bindings.
+    "argon2-cffi==25.1.0",
+    # Data validation & serialisation (used directly in schemas and settings).
+    "pydantic==2.13.4",
+    # Loads configuration from .env files into Pydantic models.
+    "pydantic-settings==2.14.2",
+    # S3-compatible object storage client.
+    "minio==7.2.20",
+    # Cryptographic primitives (AES, RSA, etc.).
+    "pycryptodome>=3.23.0",
+]
+
+# ==============================================================================
+# Development dependencies (PEP 735 dependency groups)
+# ==============================================================================
+# Tools needed only for local development and CI.  Installed with:
+#   uv sync --group dev
+# or
+#   uv sync --all-groups
+# ==============================================================================
+[dependency-groups]
+dev = [
+    # Fast linter & formatter (replaces flake8, black, isort).
+    "ruff==0.15.20",
+    # Static type checker with better editor integration than mypy.
+    "basedpyright==1.39.9",
+    # Test runner.
+    "pytest==9.1.1",
+    # Coverage plugin for pytest.
+    "pytest-cov==7.1.0",
+    # Inline documentation for FastAPI params using Annotated[..., Doc("...")].
+    "annotated-doc>=0.0.4",
+    "uvicorn>=0.50.0",
+]
+
+# ==============================================================================
+# Ruff — linter & formatter
+# ==============================================================================
+# One tool replacing flake8, black, isort, and pydocstyle.
+#   line-length        : hard limit before wrapping.
+#   target-version     : Python syntax compatibility (py314 == 3.14).
+#   select             : enabled rule families.
+#   ignore             : rule codes to silence.
+# ==============================================================================
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle (style / formatting violations)
+    "F",   # pyflakes (undefined names, unused imports)
+    "I",   # isort (import sorting)
+    "UP",  # pyupgrade (modernise old Python syntax)
+    "B",   # flake8-bugbear (likely bugs & anti-patterns)
+    "SIM", # flake8-simplify (simplify complex constructs)
+    "C4",  # flake8-comprehensions (list/dict/set best practices)
+    "N",   # pep8-naming (function / class / variable naming conventions)
+]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = false
+
+# ==============================================================================
+# BasedPyright — static type checker
+# ==============================================================================
+#   typeCheckingMode      : "recommended" balances safety with pragmatism.
+#   pythonVersion         : must match requires-python above.
+#   reportMissingTypeStubs : false avoids noise from untyped third-party libs.
+#   include / exclude     : folders to analyse.
+# ==============================================================================
+[tool.basedpyright]
+typeCheckingMode = "recommended"
+pythonVersion = "3.14"
+reportMissingTypeStubs = false
+reportAny = false
+reportExplicitAny = false
+include = ["app", "tests"]
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    ".git",
+]
+
+# ==============================================================================
+# Pytest — test runner configuration
+# ==============================================================================
+#   testpaths  : directory where pytest looks for test_*.py files.
+#   pythonpath : adds "." so `import app.xxx` resolves correctly during tests.
+#   addopts    : default CLI flags (strict mode + coverage reports).
+# ==============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=app",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+
+# ==============================================================================
+# Coverage.py — test coverage reporting
+# ==============================================================================
+#   branch       : measure both line and branch (if/else) coverage.
+#   source       : package to measure — must match the importable top-level name.
+#   show_missing : list uncovered lines in the terminal report.
+#   fail_under   : minimum percentage required for CI to pass.
+# ==============================================================================
+[tool.coverage.run]
+branch = true
+source = ["app"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 90
