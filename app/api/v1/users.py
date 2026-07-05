@@ -5,7 +5,7 @@ router = APIRouter(prefix='/users')
 
 @router.get('/')
 def list_users(page: int, limit: int):
-    pass
+    return {'page': page, 'limit': limit}
 
 @router.post('/')
 def save_user(user: CreateUser):
