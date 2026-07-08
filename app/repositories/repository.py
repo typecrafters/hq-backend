@@ -65,3 +65,13 @@ class Repository[T: HasID, U](ABC):
         merged = self.db.merge(entity)
         self.db.flush()
         return merged
+
+    def update(self, id: U, **changes: Any) -> T | None:
+        entity = self.get_by_id(id)
+        if entity is None:
+            return None
+
+        for attr, value in changes.items():
+            setattr(entity, attr, value)
+
+        return self.save(entity)
