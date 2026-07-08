@@ -1,5 +1,8 @@
+from pathlib import Path
 from typing import Any
 from jinja2 import Environment, FileSystemLoader, Template
+
+TEMPLATES_DIR = Path(__file__).resolve().parent.parent.parent / 'templates'
 
 class TemplateFile:
     template: Template
@@ -15,7 +18,7 @@ class TemplateFile:
 
 class TemplatingService:
     env = Environment(
-        loader=FileSystemLoader(),
+        loader=FileSystemLoader(TEMPLATES_DIR),
         autoescape=True
     )
 

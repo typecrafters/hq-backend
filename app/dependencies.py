@@ -14,10 +14,12 @@ from app.repositories.user_repository import UserRepository
 from app.schemas.current import Current
 from app.schemas.response.session import Session as AppSession
 from app.services.auth_service import AuthService
+from app.services.message_service import MessageService
 from app.services.static.crypto_service import CryptoService
 from app.services.static.email_service import EmailService
 from app.services.static.file_service import FileService
 from app.services.static.password_service import PasswordService
+from app.services.static.templating_service import TemplatingService
 from app.services.user_service import UserService
 
 # Database session
@@ -80,7 +82,7 @@ RequiresCryptoService = Annotated[CryptoService, Depends(crypto_service)]
 def email_service() -> type[EmailService]:
     return EmailService
 
-RequiresEmailService = Annotated[EmailService, Depends(email_service)]
+RequiresEmailService = Annotated[type[EmailService], Depends(email_service)]
 
 def file_service() -> type[FileService]:
     return FileService
@@ -91,6 +93,11 @@ def password_service() -> type[PasswordService]:
     return PasswordService
 
 RequiresPasswordService = Annotated[PasswordService, Depends(password_service)]
+
+def templating_service() -> type[TemplatingService]:
+    return TemplatingService
+
+RequiresTemplatingService = Annotated[type[TemplatingService], Depends(templating_service)]
 
 
 # Services
@@ -115,6 +122,15 @@ def get_auth_service(
 
 RequiresAuthService = Annotated[AuthService, Depends(get_auth_service)]
 
+def get_message_service(
+    msg_repo: RequiresMessageRepository,
+    email_service: RequiresEmailService,
+    templating_service: RequiresTemplatingService
+) -> MessageService:
+    return MessageService(msg_repo, email_service, templating_service)
+
+RequiresMessageService = Annotated[MessageService, Depends(get_message_service)]
+
 
 # Session 
 def get_current(session_repo: RequiresSessionRepository, user_service: RequiresUserService, crypto_service: RequiresCryptoService, pysessid: str | None = Cookie(default=None)) -> Current:
@@ -136,4 +152,7 @@ def get_current(session_repo: RequiresSessionRepository, user_service: RequiresU
         raise unauthorized
     
     return Current(session=AppSession.model_validate(session), user=user)
+
+
+RequiresAuth = Annotated[Current, Depends(get_current)]
     
