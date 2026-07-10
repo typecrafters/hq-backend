@@ -14,5 +14,5 @@ class Message(Base):
     sent_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     read_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     replied_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    replied_by: Mapped[int] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)
+    replied_by: Mapped[int | None] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=True)
     reply: Mapped[str] = mapped_column(Text, nullable=True)

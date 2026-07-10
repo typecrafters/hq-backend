@@ -32,6 +32,7 @@ def get_db_session():
         except SQLAlchemyError as e:
             print(e)
             session.rollback()
+            raise
 
 RequiresDBSession = Annotated[Session, Depends(get_db_session)]
 
