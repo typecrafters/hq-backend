@@ -3,6 +3,7 @@ from minio import Minio
 from app.config.settings import settings
 
 class FileService:
+    protected = ['system/']
     bucket = settings.s3_bucket
     client = Minio(
         endpoint=settings.s3_endpoint,
@@ -26,3 +27,13 @@ class FileService:
             object_name=key,
             expires=timedelta(seconds=expires_s)
         )
+    
+    @classmethod
+    def delete(cls, key: str) -> bool:
+        if any([key.lstrip('/').lower().startswith(p) for p in cls.protected]):
+            return False
+        try:
+            cls.client.remove_object(cls.bucket, key)
+            return True
+        except:
+            return False

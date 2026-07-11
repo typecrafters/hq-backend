@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 
-from app.config.settings import settings
 from app.models.message import Message
 from app.repositories.message_repository import MessageRepository
 from app.services.static.email_service import EmailService
@@ -47,7 +46,6 @@ class MessageService:
             'subject': message.subject,
             'content': message.content,
             'reply': message.reply,
-            'unsubscribe_url': f'{settings.frontend_url}/unsubscribe',
         })
 
         self.email_service.send_html(message.mail_to, f'Re: {message.subject}', html)

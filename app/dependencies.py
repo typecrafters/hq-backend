@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Cookie, Depends, HTTPException
+from fastapi import Cookie, Depends, HTTPException, Request
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -11,7 +11,8 @@ from app.repositories.role_repository import RoleRepository
 from app.repositories.session_repository import SessionRepository
 from app.repositories.token_repository import TokenRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.current import Current
+from app.schemas.internal.client_info import ClientInfo
+from app.schemas.internal.current import Current
 from app.schemas.response.session import Session as AppSession
 from app.services.auth_service import AuthService
 from app.services.message_service import MessageService
@@ -35,6 +36,15 @@ def get_db_session():
             raise
 
 RequiresDBSession = Annotated[Session, Depends(get_db_session)]
+
+# Client info
+
+def get_client_info(request: Request) -> ClientInfo:
+    ip_address = request.headers.get('x-forwarded-for', request.client.host)
+    user_agent = request.headers.get('user-agent', '<unknown>')
+    return ClientInfo(ip_address=ip_address, user_agent=user_agent)
+
+RequiresClientInfo = Annotated[ClientInfo, Depends(get_client_info)]
 
 # Repositories
 
@@ -103,20 +113,26 @@ RequiresTemplatingService = Annotated[type[TemplatingService], Depends(templatin
 
 # Services
 
-def get_user_service(user_repo: RequiresUserRepository, role_repo: RequiresRoleRepository) -> UserService:
-    return UserService(user_repo, role_repo)
+def get_user_service(user_repo: RequiresUserRepository, role_repo: RequiresRoleRepository, file_service: RequiresFileService) -> UserService:
+    return UserService(user_repo, role_repo, file_service)
 
 RequiresUserService = Annotated[UserService, Depends(get_user_service)]
 
 def get_auth_service(
-    session_repo: RequiresSessionRepository, 
-    user_service: RequiresUserService, 
+    session_repo: RequiresSessionRepository,
+    token_repo: RequiresTokenRepository,
+    user_service: RequiresUserService,
+    email_service: RequiresEmailService,
+    templating_service: RequiresTemplatingService,
     pw_service: RequiresPasswordService,
     crypto_service: RequiresCryptoService
 ) -> AuthService:
     return AuthService(
-        session_repo, 
-        user_service, 
+        session_repo,
+        token_repo,
+        user_service,
+        email_service,
+        templating_service,
         pw_service,
         crypto_service
     )
@@ -147,7 +163,7 @@ def get_current(session_repo: RequiresSessionRepository, user_service: RequiresU
     if not session:
         raise unauthorized
     
-    user = user_service.load_by_id(session.uid)
+    user = user_service.load_by_id(session.uid, with_picture=True)
 
     if user is None:
         raise unauthorized

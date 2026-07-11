@@ -21,13 +21,21 @@ class UserService:
 
     def get_by_id(self, id: int, with_picture: bool = False) -> User | None:
         user = self.user_repo.get_by_id(id)
+        if user is None:
+            return None
         if with_picture:
+            self.user_repo.db.expunge(user)
             user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+        return user
 
     def get_by_email(self, email: str, with_picture: bool = False) -> User | None:
         user = self.user_repo.get_by_email(email)
+        if user is None:
+            return None
         if with_picture:
+            self.user_repo.db.expunge(user)
             user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+        return user
 
     def list(self, page: int, limit: int, with_picture: bool = False) -> list[User]:
         limit = max(1, min(limit, 100))
@@ -38,13 +46,14 @@ class UserService:
 
         if with_picture:
             for user in users:
+                self.user_repo.db.expunge(user)
                 user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
-        
+
         return users
 
     def create(self, data: CreateUser) -> User:
         role = self.role_repo.save(Role(
-            name=f'{data.first_name}_{data.last_name}_role',
+            name=f'{data.first_name.lower()}_{data.last_name.lower()}_role',
             permissions=[p.strip().lower() for p in data.permissions],
             can_login=True,
         ))
@@ -78,6 +87,7 @@ class UserService:
             return None
         
         if with_picture:
+            self.user_repo.db.expunge(user)
             user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
 
         return UserWithRole(
@@ -92,3 +102,7 @@ class UserService:
             show_on_page=user.show_on_page,
             created_at=user.created_at,
         )
+    
+    def update(self, user: User) -> User | None:
+        if self.user_repo.exists(user.id):
+            return self.user_repo.save(user)

@@ -9,7 +9,7 @@
                         <thead>
                             <tr style="background-color: #0B1118; color: white; border: 4px solid --color-cyan-500;">
                                 <th colspan="5"
-                                    style="padding: 20px 0 20px 20px; text-align: left; border-bottom: 4px solid #3E97A1;">
+                                    style="background-color: #0B1118; padding: 20px 0 20px 20px; text-align: left; border-bottom: 4px solid #3E97A1;">
                                     <p style="font-family: monospace; font-size: 18px;">
                                         <span style="color: #EC5A2A;">&lt;</span><span style="color: #F4F0E7;">T</span><span
                                             style="color: #EC5A2A;">&gt;</span><span style="color: #F4F0E7;">ypecrafters</span><span
@@ -17,7 +17,7 @@
                                     </p>
                                 </th>
                                 <th colspan="1"
-                                    style="padding: 20px 020px 20px 0; text-align: right; border-bottom: 4px solid #3E97A1;">
+                                    style="background-color: #0B1118; padding: 20px 020px 20px 0; text-align: right; border-bottom: 4px solid #3E97A1;">
                                     <span
                                         style="border-radius: 9999px; border: 1px solid #EC5A2A; color: #EC5A2A; background-color: #482924; padding: 4px 12px; font-size: 12px; font-weight: 400; font-family: monospace;">VERIFY</span>
                                 </th>
@@ -27,19 +27,19 @@
                             <tr>
                                 <td 
                                     colspan="6"
-                                    style=" padding: 24px 24px 0 24px; width: 100%; color: #3B4957; font-family: monospace; font-size: 14px;"
+                                    style=" padding: 24px 24px 0 24px; width: 100%; color: #3B4957; font-family: monospace; font-size: 14px; text-align: left;"
                                 >ACTION REQUIRED</td>
                             </tr>
                             <tr>
                                 <td 
                                     colspan="6"
-                                    style="padding: 16px 24px; font-size: 24px; font-weight: 600; color: black;"
+                                    style="padding: 16px 24px; font-size: 24px; font-weight: 600; color: black; text-align: left;"
                                 >Confirm your email address</td>
                             </tr>
                             <tr>
                                 <td colspan="6" style="padding: 16px 24px;">
-                                    <p style="color: #0B1118;">Hey <b>{{ first_name | capitalize }}</b>,</p>
-                                    <p style="color: #0B1118;">
+                                    <p style="color: #0B1118; text-align: left;">Hey <b>{{ first_name | capitalize }}</b>,</p>
+                                    <p style="color: #0B1118; text-align: left;">
                                         You've been added to the TypeCrafters studio
                                         admin panel. Before you can sign in, we need
                                         to verify this email address belongs to you.
@@ -47,7 +47,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="6" style="padding: 16px 24px;">
+                                <td colspan="6" style="padding: 16px 24px; text-align: left;">
                                     <a href="{{ url }}"
                                         style="display: inline-block; text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 6px; color: white; background-color: #EC5A2A; cursor: pointer;">
                                         Verify email address
@@ -59,18 +59,18 @@
                                     <p
                                         style="padding: 16px; background-color: #F4F0E7; border-radius: 6px; border: 1px solid #C5C0B6;">
                                         <span
-                                            style="display: block; font-family: monospace; color: #3B4957; padding-bottom: 8px;">Button
+                                            style="display: block; font-family: monospace; color: #3B4957; padding-bottom: 8px; text-align: left;">Button
                                             not working?</span>
-                                        <span style="display: block;">Copy and paste this link into your broswer:</span>
+                                        <span style="display: block; text-align: left;">Copy and paste this link into your broswer:</span>
                                         <a href="{{ url }}"
-                                            style="display: block; color: #3E97A1; text-decoration: underline;">{{ url }}</a>
+                                            style="display: block; color: #3E97A1; text-decoration: underline; text-align: left;">{{ url }}</a>
                                     </p>
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan="6" style="padding: 16px 24px;">
                                     <p
-                                        style="padding: 16px; background-color: #FFEEEB; color: #B64840; border-radius: 6px; border: 1px solid #B64840;">
+                                        style="padding: 16px; text-align: left; background-color: #FFEEEB; color: #B64840; border-radius: 6px; border: 1px solid #B64840;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                                             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
                                             <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
@@ -91,8 +91,8 @@
                             </tr>
                             <tr>
                                 <td colspan="6" style="padding: 16px 24px;">
-                                    <p style="color: #3B4957;">
-                                        Questions? Reply to this email or reach 
+                                    <p style="color: #3B4957; text-align: left;">
+                                        Questions? Reply to this email or reach
                                         the team at 
                                         <a href="mailto:typecrafters0@gmail.com" style="color: #3E97A1; text-decoration: underline;">
                                             typecrafters0@gmail.com
@@ -104,7 +104,7 @@
                         <tfoot style="background-color: #F4F0E7;">
                             <tr>
                                 <td colspan="5" style="padding: 16px 0 8px 24px;">
-                                    <p style="font-size: 14px; margin: 0; color: #79746B">TypeCrafters, LLC&nbsp;&middot;&nbsp;Studio Admin&nbsp;&middot;&nbsp;<a href="{{ unsubscribe_url }}" style="color:#79746B">Unsubscribe</a></p>
+                                    <p style="font-size: 14px; margin: 0; color: #79746B; text-align: left;">TypeCrafters, LLC&nbsp;&middot;&nbsp;Studio Admin</p>
                                 </td>
                                 <td colspan="1" style="padding: 16px 24px 8px 0;">
                                     <p style="font-size: 14px; margin: 0; font-family: monospace; text-align: right;"><span style="color: #EC5A2A;">&lt;</span>T<span style="color: #EC5A2A;">&gt;</span></p>
