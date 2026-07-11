@@ -5,29 +5,42 @@ from app.repositories.user_repository import UserRepository
 from app.schemas.request.create_user import CreateUser
 from app.schemas.response.role import RoleResponse
 from app.schemas.response.user_with_role import UserWithRole
+from app.services.static.file_service import FileService
 from app.services.static.password_service import PasswordService
+
 
 class UserService:
     user_repo: UserRepository
     role_repo: RoleRepository
+    file_service: type[FileService]
 
-    def __init__(self, user_repo: UserRepository, role_repo: RoleRepository):
+    def __init__(self, user_repo: UserRepository, role_repo: RoleRepository, file_service: type[FileService]):
         self.user_repo = user_repo
         self.role_repo = role_repo
+        self.file_service = file_service
 
+    def get_by_id(self, id: int, with_picture: bool = False) -> User | None:
+        user = self.user_repo.get_by_id(id)
+        if with_picture:
+            user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
 
-    def get_by_id(self, id: int) -> User | None:
-        return self.user_repo.get_by_id(id)
+    def get_by_email(self, email: str, with_picture: bool = False) -> User | None:
+        user = self.user_repo.get_by_email(email)
+        if with_picture:
+            user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
 
-    def get_by_email(self, email: str) -> User | None:
-        return self.user_repo.get_by_email(email)
-
-    def list(self, page: int, limit: int) -> list[User]:
+    def list(self, page: int, limit: int, with_picture: bool = False) -> list[User]:
         limit = max(1, min(limit, 100))
         page = max(page - 1, 0)
         offset = page * limit
 
-        return self.user_repo.get_all(limit=limit, offset=offset)
+        users = self.user_repo.get_all(limit=limit, offset=offset)
+
+        if with_picture:
+            for user in users:
+                user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+        
+        return users
 
     def create(self, data: CreateUser) -> User:
         role = self.role_repo.save(Role(
@@ -56,13 +69,16 @@ class UserService:
 
         return self.user_repo.save(user)
 
-    def load_by_id(self, id: int) -> UserWithRole | None:
+    def load_by_id(self, id: int, with_picture: bool = False) -> UserWithRole | None:
         user = self.user_repo.get_by_id(id)
         if user is None:
             return None
         role = self.role_repo.get_by_id(user.role_id)
         if role is None:
             return None
+        
+        if with_picture:
+            user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
 
         return UserWithRole(
             id=user.id,

@@ -22,6 +22,9 @@ class MessageService:
         self.email_service = email_service
         self.templating_service = templating_service
 
+    def get_all(self, limit: int | None = None, offset: int | None = None) -> list[Message]:
+        return self.msg_repo.get_all(limit, offset)
+
     def get_by_id(self, id: int) -> Message | None:
         return self.msg_repo.get_by_id(id)
     
