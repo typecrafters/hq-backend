@@ -15,6 +15,7 @@ class Me(BaseModel):
     email: str
     profile_picture_url: str
     role: PublicRole
+    session_id: str
     session_expires_at: datetime
 
     @classmethod
@@ -30,5 +31,6 @@ class Me(BaseModel):
                 name=current.user.role.name,
                 permissions=current.user.role.permissions
             ),
+            session_id=current.session.id,
             session_expires_at=current.session.expires_at
         )
