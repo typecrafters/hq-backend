@@ -14,3 +14,6 @@ class UserWithRole(BaseModel):
     profile_picture_url: str | None
     show_on_page: bool
     created_at: datetime
+
+    def can(self, permission: str):
+        return permission.strip().lower() in self.role.permissions

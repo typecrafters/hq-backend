@@ -1,9 +1,4 @@
-from typing import Annotated
-
-from fastapi import Depends
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm.session import Session
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import create_engine
 from app.config.settings import settings
 from app.db.base import Base
 
@@ -22,4 +17,11 @@ engine = create_engine(
 )
 
 def create_db():
+    from app.models.message import Message
+    from app.models.post import Post
+    from app.models.project import Project
+    from app.models.role import Role
+    from app.models.session import Session
+    from app.models.token import Token
+    from app.models.user import User
     Base.metadata.create_all(engine)

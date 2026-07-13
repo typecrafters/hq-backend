@@ -3,8 +3,7 @@ from pydantic.alias_generators import to_camel
 
 class ResetPassword(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-
-    token: str
+    
     password: str
     confirm_password: str
 

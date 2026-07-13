@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import jwt as pyjwt
-from fastapi import Depends, Header, HTTPException
+from fastapi import Cookie, Depends, Header, HTTPException, Request
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -14,12 +14,17 @@ from app.repositories.session_repository import SessionRepository
 from app.repositories.token_repository import TokenRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.current_user import CurrentUser
+from app.schemas.internal.client_info import ClientInfo
+from app.schemas.internal.current import Current
+from app.schemas.response.session import Session as AppSession
 from app.services.auth_service import AuthService
+from app.services.message_service import MessageService
 from app.services.static.crypto_service import CryptoService
 from app.services.static.email_service import EmailService
 from app.services.static.file_service import FileService
 from app.services.static.jwt_service import JwtService
 from app.services.static.password_service import PasswordService
+from app.services.static.templating_service import TemplatingService
 from app.services.user_service import UserService
 
 # Database session
@@ -35,6 +40,15 @@ def get_db_session():
             raise
 
 RequiresDBSession = Annotated[Session, Depends(get_db_session)]
+
+# Client info
+
+def get_client_info(request: Request) -> ClientInfo:
+    ip_address = request.headers.get('x-forwarded-for', request.client.host)
+    user_agent = request.headers.get('user-agent', '<unknown>')
+    return ClientInfo(ip_address=ip_address, user_agent=user_agent)
+
+RequiresClientInfo = Annotated[ClientInfo, Depends(get_client_info)]
 
 # Repositories
 
@@ -83,7 +97,7 @@ RequiresCryptoService = Annotated[CryptoService, Depends(crypto_service)]
 def email_service() -> type[EmailService]:
     return EmailService
 
-RequiresEmailService = Annotated[EmailService, Depends(email_service)]
+RequiresEmailService = Annotated[type[EmailService], Depends(email_service)]
 
 def file_service() -> type[FileService]:
     return FileService
@@ -100,24 +114,35 @@ def jwt_service() -> type[JwtService]:
 
 RequiresJwtService = Annotated[JwtService, Depends(jwt_service)]
 
+def templating_service() -> type[TemplatingService]:
+    return TemplatingService
+
+RequiresTemplatingService = Annotated[type[TemplatingService], Depends(templating_service)]
+
 
 # Services
 
-def get_user_service(user_repo: RequiresUserRepository, role_repo: RequiresRoleRepository) -> UserService:
-    return UserService(user_repo, role_repo)
+def get_user_service(user_repo: RequiresUserRepository, role_repo: RequiresRoleRepository, file_service: RequiresFileService) -> UserService:
+    return UserService(user_repo, role_repo, file_service)
 
 RequiresUserService = Annotated[UserService, Depends(get_user_service)]
 
 def get_auth_service(
     session_repo: RequiresSessionRepository,
+    token_repo: RequiresTokenRepository,
     user_service: RequiresUserService,
+    email_service: RequiresEmailService,
+    templating_service: RequiresTemplatingService,
     pw_service: RequiresPasswordService,
     crypto_service: RequiresCryptoService,
     jwt_service: RequiresJwtService,
 ) -> AuthService:
     return AuthService(
         session_repo,
+        token_repo,
         user_service,
+        email_service,
+        templating_service,
         pw_service,
         crypto_service,
         jwt_service,
@@ -125,17 +150,48 @@ def get_auth_service(
 
 RequiresAuthService = Annotated[AuthService, Depends(get_auth_service)]
 
+def get_message_service(
+    msg_repo: RequiresMessageRepository,
+    email_service: RequiresEmailService,
+    templating_service: RequiresTemplatingService
+) -> MessageService:
+    return MessageService(msg_repo, email_service, templating_service)
+
+RequiresMessageService = Annotated[MessageService, Depends(get_message_service)]
+
+
+# Session cookie auth
+
+def get_current(session_repo: RequiresSessionRepository, user_service: RequiresUserService, crypto_service: RequiresCryptoService, pysessid: str | None = Cookie(default=None)) -> Current:
+    unauthorized = HTTPException(401, 'Unauthorized.')
+
+    if not pysessid:
+        raise unauthorized
+    
+    sessid_hash = crypto_service.sha256hash(pysessid)
+
+    session = session_repo.get_by_id(sessid_hash)
+
+    if not session:
+        raise unauthorized
+    
+    user = user_service.load_by_id(session.uid, with_picture=True)
+
+    if user is None:
+        raise unauthorized
+    
+    return Current(session=AppSession.model_validate(session), user=user)
+
+
+RequiresAuth = Annotated[Current, Depends(get_current)]
+
 
 # JWT Bearer auth
 
 def get_current_user(
     authorization: str | None = Header(default=None),
 ) -> CurrentUser:
-    """Return the authenticated user extracted from a Bearer JWT token.
-
-    The ``sub`` claim (RFC 7519) is stored as a string by ``JwtService.encode``
-    but ``CurrentUser.id`` is ``int`` — this function converts via ``int()``.
-    """
+    """Return the authenticated user extracted from a Bearer JWT token."""
     unauthorized = HTTPException(status_code=401, detail="Unauthorized.")
 
     if not authorization:
@@ -158,4 +214,3 @@ def get_current_user(
 
 
 RequiresCurrentUser = Annotated[CurrentUser, Depends(get_current_user)]
-    

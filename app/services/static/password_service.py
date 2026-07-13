@@ -4,7 +4,7 @@ from argon2.exceptions import VerifyMismatchError, InvalidHash
 class PasswordService:
     ph = PasswordHasher(
         time_cost=3,
-        memory_cost=2**18,
+        memory_cost=2**16,
         parallelism=4,
         hash_len=32,
         salt_len=16

@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     s3_access_key: str
     s3_secret_key: str
     s3_secure: bool
+    s3_bucket: str
 
     frontend_url: str
 
