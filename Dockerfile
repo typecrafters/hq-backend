@@ -28,7 +28,7 @@ WORKDIR /app
 
 # Install production dependencies.
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --active
 
 # ── production ───────────────────────────────────────────────────────────────
 FROM base AS production
@@ -44,7 +44,7 @@ CMD ["/opt/venv/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80
 FROM base AS development
 
 # Add dev dependencies on top of the production ones.
-RUN uv sync --frozen --all-groups
+RUN uv sync --frozen --all-groups --active
 
 # Install watchdog for reliable file-watching in bind-mounted volumes
 # (Docker Desktop on Windows/macOS doesn't propagate inotify events).
