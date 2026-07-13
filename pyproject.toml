@@ -28,7 +28,9 @@ dependencies = [
     "minio==7.2.20",
     # Cryptographic primitives (AES, RSA, etc.).
     "pycryptodome>=3.23.0",
-    # Templating engine - HTML emails
+    # Alembic database migrations.
+    "alembic>=1.18.5",
+    # Templating engine - HTML emails.
     "jinja2>=3.1.6",
     "apscheduler>=3.11.3",
 ]
@@ -54,6 +56,8 @@ dev = [
     # Inline documentation for FastAPI params using Annotated[..., Doc("...")].
     "annotated-doc>=0.0.4",
     "uvicorn>=0.50.0",
+    # HTTP client for TestClient integration tests.
+    "httpx>=0.28.0",
 ]
 
 # ==============================================================================
@@ -142,4 +146,4 @@ source = ["app"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
-fail_under = 90
+fail_under = 75

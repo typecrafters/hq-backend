@@ -95,7 +95,6 @@ activemq-data/
 
 *.sage.py
 
-.env
 .envrc
 .venv
 env/
@@ -135,3 +134,5 @@ marimo/_lsp/
 __marimo__/
 
 .streamlit/secrets.toml
+
+.codebase-memory/

@@ -8,11 +8,20 @@ from app.schemas.response.user_with_role import UserWithRole
 router = APIRouter(prefix='/users')
 
 @router.get('/')
-def list_users(page: int, limit: int, user_service: RequiresUserService):
+def list_users(
+    page: int,
+    limit: int,
+    user_service: RequiresUserService,
+    current_user: RequiresAuth,
+):
     return user_service.list(page, limit)
 
 @router.post('/')
-def save_user(user: CreateUser, user_service: RequiresUserService):
+def save_user(
+    user: CreateUser,
+    user_service: RequiresUserService,
+    current_user: RequiresAuth,
+):
     return user_service.create(user)
 
 @router.patch('/me', status_code=200, response_model=ItemResponse[UserWithRole])
