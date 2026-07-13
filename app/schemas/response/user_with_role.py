@@ -8,9 +8,9 @@ class UserWithRole(BaseModel):
     role: RoleResponse
     first_name: str
     last_name: str
-    title: str
+    title: str | None
     email: str
     password_set: bool
-    profile_picture_url: str
+    profile_picture_url: str | None
     show_on_page: bool
     created_at: datetime

@@ -1,0 +1,20 @@
+# ==============================================================================
+# .dockerignore — keep the image lean
+# ==============================================================================
+
+.git
+.gitignore
+
+.venv
+__pycache__
+*.pyc
+
+.env
+.env.example
+
+htmlcov
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+README.md

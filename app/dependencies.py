@@ -1,5 +1,7 @@
 from typing import Annotated
-from fastapi import Cookie, Depends, HTTPException
+
+import jwt as pyjwt
+from fastapi import Depends, Header, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -11,12 +13,12 @@ from app.repositories.role_repository import RoleRepository
 from app.repositories.session_repository import SessionRepository
 from app.repositories.token_repository import TokenRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.current import Current
-from app.schemas.response.session import Session as AppSession
+from app.schemas.current_user import CurrentUser
 from app.services.auth_service import AuthService
 from app.services.static.crypto_service import CryptoService
 from app.services.static.email_service import EmailService
 from app.services.static.file_service import FileService
+from app.services.static.jwt_service import JwtService
 from app.services.static.password_service import PasswordService
 from app.services.user_service import UserService
 
@@ -30,6 +32,7 @@ def get_db_session():
         except SQLAlchemyError as e:
             print(e)
             session.rollback()
+            raise
 
 RequiresDBSession = Annotated[Session, Depends(get_db_session)]
 
@@ -92,6 +95,11 @@ def password_service() -> type[PasswordService]:
 
 RequiresPasswordService = Annotated[PasswordService, Depends(password_service)]
 
+def jwt_service() -> type[JwtService]:
+    return JwtService
+
+RequiresJwtService = Annotated[JwtService, Depends(jwt_service)]
+
 
 # Services
 
@@ -101,39 +109,53 @@ def get_user_service(user_repo: RequiresUserRepository, role_repo: RequiresRoleR
 RequiresUserService = Annotated[UserService, Depends(get_user_service)]
 
 def get_auth_service(
-    session_repo: RequiresSessionRepository, 
-    user_service: RequiresUserService, 
+    session_repo: RequiresSessionRepository,
+    user_service: RequiresUserService,
     pw_service: RequiresPasswordService,
-    crypto_service: RequiresCryptoService
+    crypto_service: RequiresCryptoService,
+    jwt_service: RequiresJwtService,
 ) -> AuthService:
     return AuthService(
-        session_repo, 
-        user_service, 
+        session_repo,
+        user_service,
         pw_service,
-        crypto_service
+        crypto_service,
+        jwt_service,
     )
 
 RequiresAuthService = Annotated[AuthService, Depends(get_auth_service)]
 
 
-# Session 
-def get_current(session_repo: RequiresSessionRepository, user_service: RequiresUserService, crypto_service: RequiresCryptoService, pysessid: str | None = Cookie(default=None)) -> Current:
-    unauthorized = HTTPException(401, 'Unauthorized.')
+# JWT Bearer auth
 
-    if not pysessid:
+def get_current_user(
+    authorization: str | None = Header(default=None),
+) -> CurrentUser:
+    """Return the authenticated user extracted from a Bearer JWT token.
+
+    The ``sub`` claim (RFC 7519) is stored as a string by ``JwtService.encode``
+    but ``CurrentUser.id`` is ``int`` — this function converts via ``int()``.
+    """
+    unauthorized = HTTPException(status_code=401, detail="Unauthorized.")
+
+    if not authorization:
         raise unauthorized
-    
-    sessid_hash = crypto_service.sha256hash(pysessid)
 
-    session = session_repo.get_by_id(sessid_hash)
+    try:
+        scheme, token = authorization.split(" ", 1)
+        if scheme.lower() != "bearer":
+            raise unauthorized
 
-    if not session:
+        payload = JwtService.decode(token)
+
+        return CurrentUser(
+            id=int(payload["sub"]),
+            email=payload.get("email"),
+            permissions=payload.get("permissions", []),
+        )
+    except (ValueError, pyjwt.PyJWTError, KeyError, TypeError):
         raise unauthorized
-    
-    user = user_service.load_by_id(session.uid)
 
-    if user is None:
-        raise unauthorized
-    
-    return Current(session=AppSession.model_validate(session), user=user)
+
+RequiresCurrentUser = Annotated[CurrentUser, Depends(get_current_user)]
     
