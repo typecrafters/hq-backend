@@ -27,10 +27,6 @@ class Settings(BaseSettings):
 
     frontend_url: str
 
-    jwt_secret: SecretStr
-    jwt_algorithm: str = "HS256"
-    jwt_expiry_minutes: int = 15
-
     def database_url(self) -> str:
         engine = f"{self.db_engine}+{self.db_driver}" if self.db_driver else self.db_engine
         url = f"{engine}://{self.db_user}:{self.db_pass.get_secret_value()}@{self.db_host}:{self.db_port}/{self.db_name}"

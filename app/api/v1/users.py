@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 from app.dependencies import RequiresAuth, RequiresUserService
-from app.schemas.current_user import CurrentUser
 from app.schemas.request.create_user import CreateUser
 
 router = APIRouter(prefix='/users')

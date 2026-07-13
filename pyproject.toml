@@ -28,8 +28,6 @@ dependencies = [
     "minio==7.2.20",
     # Cryptographic primitives (AES, RSA, etc.).
     "pycryptodome>=3.23.0",
-    # JWT encoding & decoding (HS256, RS256).
-    "pyjwt==2.13.0",
     # Alembic database migrations.
     "alembic>=1.18.5",
     # Templating engine - HTML emails.
