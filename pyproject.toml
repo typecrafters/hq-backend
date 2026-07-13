@@ -32,6 +32,7 @@ dependencies = [
     "alembic>=1.18.5",
     # Templating engine - HTML emails.
     "jinja2>=3.1.6",
+    # Job scheduling library
     "apscheduler>=3.11.3",
 ]
 

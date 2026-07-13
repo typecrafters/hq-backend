@@ -136,3 +136,7 @@ __marimo__/
 .streamlit/secrets.toml
 
 .codebase-memory/
+
+.env
+.env.*
+!.env.example
