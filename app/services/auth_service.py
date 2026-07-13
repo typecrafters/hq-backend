@@ -93,61 +93,59 @@ class AuthService:
             expires_in=settings.jwt_expiry_minutes * 60,
         )
 
-    def register(self, name: str, email: str, password: str, ip_address: str = "", user_agent: str = "") -> LoginResult | None:
-        """Register a new user and return login result (auto-login).
-
-        Returns ``None`` when the email is already taken.
-        """
-        # Check for duplicate email
-        existing = self.user_service.get_by_email(email)
-        if existing is not None:
-            return None
-
-        # Find or create default user role
-        role_repo = self.user_service.role_repo
-        default_role = role_repo.get_by("name", "user")
-        if default_role is None:
-            default_role = role_repo.save(Role(name="user", permissions=[], can_login=True))
-
-        # Split name into first/last
-        parts = name.strip().split(" ", 1)
-        first_name = parts[0] or "Unknown"
-        last_name = parts[1] if len(parts) > 1 else "User"
-
-        now = datetime.now(timezone.utc)
-        user = User(
-            role_id=default_role.id,
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            password=self.pw_service.hash(password),
-            created_at=now,
-        )
-        saved_user = self.user_service.user_repo.save(user)
-
-        # Create session
-        pysessid = secrets.token_hex(self.PYSESSID_LENGTH)
-        exp = now + self.DEFAULT_AGE
-
-        session = SessionModel(
-            id=self.crypto_service.sha256hash(pysessid),
-            uid=saved_user.id,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            issued_at=now,
-            expires_at=exp,
-        )
-        self.session_repo.save(session)
-
-        # Generate JWT
-        user_with_role = self.user_service.load_by_id(saved_user.id)
-        jwt = self.create_token(user_with_role)
-
-        return LoginResult(
-            pysessid=pysessid,
-            access_token=jwt,
-            expires_in=settings.jwt_expiry_minutes * 60,
-        )
+    # ── register ─────────────────────────────────────────────────────────
+    # Disabled: this is an admin-only app. Users are created via the admin panel.
+    #
+    # def register(self, name: str, email: str, password: str, ip_address: str = "", user_agent: str = "") -> LoginResult | None:
+    #     """Register a new user and return login result (auto-login).
+    #
+    #     Returns ``None`` when the email is already taken.
+    #     """
+    #     existing = self.user_service.get_by_email(email)
+    #     if existing is not None:
+    #         return None
+    #
+    #     role_repo = self.user_service.role_repo
+    #     default_role = role_repo.get_by("name", "user")
+    #     if default_role is None:
+    #         default_role = role_repo.save(Role(name="user", permissions=[], can_login=True))
+    #
+    #     parts = name.strip().split(" ", 1)
+    #     first_name = parts[0] or "Unknown"
+    #     last_name = parts[1] if len(parts) > 1 else "User"
+    #
+    #     now = datetime.now(timezone.utc)
+    #     user = User(
+    #         role_id=default_role.id,
+    #         first_name=first_name,
+    #         last_name=last_name,
+    #         email=email,
+    #         password=self.pw_service.hash(password),
+    #         created_at=now,
+    #     )
+    #     saved_user = self.user_service.user_repo.save(user)
+    #
+    #     pysessid = secrets.token_hex(self.PYSESSID_LENGTH)
+    #     exp = now + self.DEFAULT_AGE
+    #
+    #     session = SessionModel(
+    #         id=self.crypto_service.sha256hash(pysessid),
+    #         uid=saved_user.id,
+    #         ip_address=ip_address,
+    #         user_agent=user_agent,
+    #         issued_at=now,
+    #         expires_at=exp,
+    #     )
+    #     self.session_repo.save(session)
+    #
+    #     user_with_role = self.user_service.load_by_id(saved_user.id)
+    #     jwt = self.create_token(user_with_role)
+    #
+    #     return LoginResult(
+    #         pysessid=pysessid,
+    #         access_token=jwt,
+    #         expires_in=settings.jwt_expiry_minutes * 60,
+    #     )
 
     def create_token(self, user) -> str:
         """Return a signed JWT string for *user*."""

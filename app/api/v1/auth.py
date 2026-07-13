@@ -1,12 +1,18 @@
 import time
 import traceback
+
 from fastapi import APIRouter, HTTPException, Request, Response
 
 from app.config.settings import settings
-from app.dependencies import RequiresAuth, RequiresAuthService, RequiresClientInfo, RequiresCurrentUser, RequiresSessionRepository, RequiresUserService
+from app.dependencies import (
+    RequiresAuthService,
+    RequiresClientInfo,
+    RequiresCurrentUser,
+    RequiresSessionRepository,
+    RequiresUserService,
+)
 from app.schemas.request.forgot_password import ForgotPassword
 from app.schemas.request.login_user import LoginUser
-from app.schemas.request.register_user import RegisterUser
 from app.schemas.request.reset_password import ResetPassword
 from app.schemas.response.auth import TokenResponse
 from app.schemas.response.item_response import ItemResponse
@@ -114,47 +120,50 @@ def auth_user(
         )
 
 
-@router.post("/register", status_code=201)
-def register_user(
-    data: RegisterUser,
-    auth_service: RequiresAuthService,
-    client_info: RequiresClientInfo,
-    response: Response,
-):
-    try:
-        result = auth_service.register(
-            data.name,
-            data.email,
-            data.password,
-            client_info.ip_address,
-            client_info.user_agent,
-        )
-
-        if result is None:
-            raise HTTPException(status_code=409, detail="Email already registered.")
-
-        max_age = auth_service.DEFAULT_AGE
-        response.set_cookie(
-            key="pysessid",
-            value=result.pysessid,
-            httponly=True,
-            secure=True,
-            samesite="lax",
-            max_age=int(max_age.total_seconds()),
-            path="/",
-        )
-
-        return TokenResponse(
-            access_token=result.access_token, expires_in=result.expires_in
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"REGISTER ERROR: {type(e).__name__}: {e}")
-        traceback.print_exc()
-        raise HTTPException(
-            500, "An unknown error occurred while registering."
-        )
+# ── POST /auth/register ────────────────────────────────────────────────────
+# Disabled: this is an admin-only app. Users are created via the admin panel.
+#
+# @router.post("/register", status_code=201)
+# def register_user(
+#     data: RegisterUser,
+#     auth_service: RequiresAuthService,
+#     client_info: RequiresClientInfo,
+#     response: Response,
+# ):
+#     try:
+#         result = auth_service.register(
+#             data.name,
+#             data.email,
+#             data.password,
+#             client_info.ip_address,
+#             client_info.user_agent,
+#         )
+#
+#         if result is None:
+#             raise HTTPException(status_code=409, detail="Email already registered.")
+#
+#         max_age = auth_service.DEFAULT_AGE
+#         response.set_cookie(
+#             key="pysessid",
+#             value=result.pysessid,
+#             httponly=True,
+#             secure=True,
+#             samesite="lax",
+#             max_age=int(max_age.total_seconds()),
+#             path="/",
+#         )
+#
+#         return TokenResponse(
+#             access_token=result.access_token, expires_in=result.expires_in
+#         )
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         print(f"REGISTER ERROR: {type(e).__name__}: {e}")
+#         traceback.print_exc()
+#         raise HTTPException(
+#             500, "An unknown error occurred while registering."
+#         )
 
 
 @router.post("/refresh")
