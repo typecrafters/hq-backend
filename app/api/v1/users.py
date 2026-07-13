@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.dependencies import RequiresCurrentUser, RequiresUserService
+from app.dependencies import RequiresAuth, RequiresUserService
 from app.schemas.current_user import CurrentUser
 from app.schemas.request.create_user import CreateUser
 
@@ -10,7 +10,7 @@ def list_users(
     page: int,
     limit: int,
     user_service: RequiresUserService,
-    current_user: RequiresCurrentUser,
+    current_user: RequiresAuth,
 ):
     return user_service.list(page, limit)
 
@@ -18,6 +18,6 @@ def list_users(
 def save_user(
     user: CreateUser,
     user_service: RequiresUserService,
-    current_user: RequiresCurrentUser,
+    current_user: RequiresAuth,
 ):
     return user_service.create(user)
