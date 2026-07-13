@@ -1,58 +1,26 @@
 """Django-like management commands.
 
 Usage:
-    uv run python manage.py makemigrations "description"
-    uv run python manage.py migrate
+    uv run python app/manage.py <command> [args]
+
+Commands are auto-discovered from app/commands/. To add a new command,
+create a module in app/commands/ with a register(registry) function.
 """
 
 import sys
-import re
-import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-VERSIONS = ROOT / "app" / "models" / "migrations" / "versions"
+sys.path.insert(0, str(ROOT))
+
+from app.commands.registry import CommandRegistry
 
 
-def makemigrations(message: str):
-    max_num = 0
-    if VERSIONS.exists():
-        for f in VERSIONS.iterdir():
-            if f.suffix == ".py" and f.name != "__init__.py":
-                m = re.match(r"^(\d{4})_", f.name)
-                if m:
-                    max_num = max(max_num, int(m.group(1)))
-
-    rev_id = f"{max_num + 1:04d}"
-    result = subprocess.run(
-        [sys.executable, "-m", "alembic", "revision", "--autogenerate", "-m", message, "--rev-id", rev_id],
-        cwd=ROOT,
-    )
-    sys.exit(result.returncode)
-
-
-def migrate():
-    result = subprocess.run(
-        [sys.executable, "-m", "alembic", "upgrade", "head"],
-        cwd=ROOT,
-    )
-    sys.exit(result.returncode)
+def main():
+    registry = CommandRegistry()
+    registry.autodiscover()
+    registry.run(sys.argv[1:])
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: uv run python manage.py <command> [args]")
-        print()
-        print("Commands:")
-        print("  makemigrations <description>   = makemigrations")
-        print("  migrate                         = migrate")
-        sys.exit(1)
-
-    cmd = sys.argv[1]
-    if cmd == "makemigrations" and len(sys.argv) >= 3:
-        makemigrations(" ".join(sys.argv[2:]))
-    elif cmd == "migrate":
-        migrate()
-    else:
-        print(f"Unknown command: {cmd}")
-        sys.exit(1)
+    main()
