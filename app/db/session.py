@@ -3,7 +3,7 @@ from app.config.settings import settings
 from app.db.base import Base
 
 engine = create_engine(
-    settings.database_url(),
+    settings.db_url,
     pool_size=10,
     max_overflow=20,
     pool_timeout=30,
