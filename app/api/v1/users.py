@@ -56,6 +56,8 @@ def update_self(
             user.last_name = data.last_name
         if data.profile_picture_url:
             user.profile_picture_url = data.profile_picture_url
+        if data.password:
+            user.password = password_service.hash(data.password)
 
         if not user.profile_picture_url and not data.profile_picture_url:
             pass  # Wanna be startin' somethin'

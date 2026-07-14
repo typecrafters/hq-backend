@@ -9,4 +9,5 @@ class UpdateSelf(BaseModel):
     last_name: str | None
     email: str | None
     profile_picture_url: str | None
+    password: str | None
     current_password: str
