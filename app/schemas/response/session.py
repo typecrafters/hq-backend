@@ -7,8 +7,8 @@ class Session(BaseModel):
 
     id: str
     uid: int
-    ip_address: str
-    user_agent: str
+    ip_address: str | None
+    user_agent: str | None
     issued_at: datetime
     expires_at: datetime
     revoked_at: datetime | None

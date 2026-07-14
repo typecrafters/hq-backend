@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import BigInteger, Identity, String, Boolean, DateTime
+from sqlalchemy import BigInteger, ForeignKey, Identity, String, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
@@ -8,7 +8,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
-    role_id: Mapped[int] = mapped_column(BigInteger)
+    role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('roles.id'))
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str] = mapped_column(String, nullable=False)
     title: Mapped[str | None] = mapped_column(String, nullable=True)
