@@ -1,28 +1,34 @@
 from fastapi import APIRouter, HTTPException
 from app.dependencies import RequiresAuth, RequiresPasswordService, RequiresUserService
+from app.schemas.response.item_response import ItemResponse
+from app.schemas.response.list_response import ListResponse
 from app.schemas.request.create_user import CreateUser
 from app.schemas.request.update_self import UpdateSelf
 from app.schemas.response.item_response import ItemResponse
 from app.schemas.response.user_with_role import UserWithRole
+from app.schemas.response.user_response import UserResponse
 
 router = APIRouter(prefix='/users')
 
-@router.get('/')
+@router.get('/', response_model=ListResponse[UserResponse])
 def list_users(
     page: int,
     limit: int,
-    user_service: RequiresUserService,
-    current_user: RequiresAuth,
+    user_service: RequiresUserService
 ):
-    return user_service.list(page, limit)
+    result = user_service.list(page, limit, with_picture=True)
+    payload = [UserResponse.from_model(u) for u in result]
+    return ListResponse(message='Users retrieved', items=payload, meta={ 'count': len(payload) })
 
-@router.post('/')
+@router.post('/', status_code=201, response_model=ItemResponse[UserResponse])
 def save_user(
     user: CreateUser,
     user_service: RequiresUserService,
     current_user: RequiresAuth,
 ):
-    return user_service.create(user)
+    result = user_service.create(user)
+    item = UserResponse.from_model(result)
+    return ItemResponse(message='User created successfully', item=item)
 
 @router.patch('/me', status_code=200, response_model=ItemResponse[UserWithRole])
 def update_self(
