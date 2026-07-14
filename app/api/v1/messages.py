@@ -9,7 +9,7 @@ from app.schemas.response.message import MessageResponse
 router = APIRouter(prefix='/messages')
 
 @router.get('/', response_model=ListResponse[MessageResponse])
-def get_all_messages(msg_service: RequiresMessageService, current: RequiresAuth, limit: int | None = None, offset: int | None = None):
+def get_all_messages(msg_service: RequiresMessageService, current: RequiresAuth, limit: int | None = None, offset: int | None = None, unread: bool | None = None):
     try:
         if not current.user.can('read:message'):
             raise HTTPException(403, 'Forbidden.')
@@ -17,9 +17,10 @@ def get_all_messages(msg_service: RequiresMessageService, current: RequiresAuth,
         limit = min(max(1, limit), 50) if limit else 50
         offset = max(0, offset) if offset else 0
 
-        messages = msg_service.get_all(limit, offset)
+        messages = msg_service.get_all(limit, offset, unread)
+        total = msg_service.count_all(unread)
             
-        return ListResponse(message='Message found', items=messages)
+        return ListResponse(message='Message found', items=messages, meta={'total': total, 'limit': limit, 'offset': offset})
     except HTTPException as e:
         raise e
     except:
@@ -82,9 +83,7 @@ def reply_to_message(id: int, data: ReplyToMessage, msg_service: RequiresMessage
         if message is None:
             raise HTTPException(404, 'Message not found')
         
-        msg_service.send_reply(message)
-        
-        return ItemResponse(message='Message updated to read', item=message)
+        return ItemResponse(message='Message replied', item=message)
 
     except HTTPException as e:
         raise e
@@ -92,7 +91,7 @@ def reply_to_message(id: int, data: ReplyToMessage, msg_service: RequiresMessage
         raise HTTPException(500, 'An unknown error occurred while replying to the message.')
     
 @router.delete('/{id}', status_code=204)
-def delete_message(id: int, msg_service: RequiresMessageService, current: RequiresAuth):
+def archive_message(id: int, msg_service: RequiresMessageService, current: RequiresAuth):
     try:
         if not current.user.can('delete:message'):
             raise HTTPException(403, 'Forbidden.')

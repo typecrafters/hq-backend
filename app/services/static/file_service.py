@@ -21,7 +21,9 @@ class FileService:
         )
 
     @classmethod
-    def sign_download(cls, key: str, expires_s: int = 3600):
+    def sign_download(cls, key: str | None, expires_s: int = 3600):
+        if not key:
+            return key
         return cls.client.presigned_get_object(
             bucket_name=cls.bucket,
             object_name=key,

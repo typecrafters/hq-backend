@@ -67,12 +67,14 @@ def auth_user(data: LoginUser, auth_service: RequiresAuthService, client_info: R
         response.set_cookie(
             key='pysessid',
             value=session,
-            httponly=True,
-            secure=True,
+            httponly=False,
+            secure=False,
             samesite='lax',
             max_age=int(max_age.total_seconds()),
             path='/'
         )
+
+        return {"session_id": session}
     except HTTPException as e:
         raise e
     except:

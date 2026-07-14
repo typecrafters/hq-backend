@@ -21,8 +21,11 @@ class MessageService:
         self.email_service = email_service
         self.templating_service = templating_service
 
-    def get_all(self, limit: int | None = None, offset: int | None = None) -> list[Message]:
-        return self.msg_repo.get_all(limit, offset)
+    def get_all(self, limit: int | None = None, offset: int | None = None, unread: bool | None = None) -> list[Message]:
+        return self.msg_repo.get_all(limit, offset, unread)
+
+    def count_all(self, unread: bool | None = None) -> int:
+        return self.msg_repo.count_all(unread)
 
     def get_by_id(self, id: int) -> Message | None:
         return self.msg_repo.get_by_id(id)
@@ -51,17 +54,28 @@ class MessageService:
         self.email_service.send_html(message.mail_to, f'Re: {message.subject}', html)
 
     def reply_now(self, id: int, reply: str, uid: int) -> Message | None:
+        now = datetime.now(timezone.utc)
         message = self.msg_repo.update(
             id,
-            replied_at=datetime.now(timezone.utc),
+            read_at=now,
+            replied_at=now,
             replied_by=uid,
             reply=reply
         )
 
         if message is not None:
-            self.send_reply(message)
+            try:
+                self.send_reply(message)
+            except Exception as e:
+                print(f"Failed to send reply email for message {id}: {e}")
 
         return message
     
     def delete(self, id: int) -> bool:
-        return self.msg_repo.delete_by_id(id)
+        message = self.msg_repo.get_by_id(id)
+        if message is None:
+            return False
+        if message.archived_at is not None:
+            return False
+        self.msg_repo.update(id, archived_at=datetime.now(timezone.utc))
+        return True

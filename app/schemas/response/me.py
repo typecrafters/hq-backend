@@ -11,9 +11,9 @@ class Me(BaseModel):
     id: int
     first_name: str
     last_name: str
-    title: str
+    title: str | None
     email: str
-    profile_picture_url: str
+    profile_picture_url: str | None
     role: PublicRole
     session_id: str
     session_expires_at: datetime

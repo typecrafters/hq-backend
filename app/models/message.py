@@ -16,3 +16,4 @@ class Message(Base):
     replied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     replied_by: Mapped[int | None] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=True)
     reply: Mapped[str] = mapped_column(Text, nullable=True)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

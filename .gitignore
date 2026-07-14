@@ -140,3 +140,4 @@ __marimo__/
 .env
 .env.*
 !.env.example
+TypeCrafters-Design-System.md
