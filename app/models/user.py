@@ -8,7 +8,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
-    role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('roles.id'))
+    role_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey('roles.id'), nullable=True)
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str] = mapped_column(String, nullable=False)
     title: Mapped[str | None] = mapped_column(String, nullable=True)

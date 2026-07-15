@@ -52,18 +52,19 @@ class UserService:
         return users
 
     def create(self, data: CreateUser) -> User:
-        role = self.role_repo.save(Role(
-            name=f'{data.first_name.lower()}_{data.last_name.lower()}_role',
-            permissions=[p.strip().lower() for p in data.permissions],
-            can_login=True,
-        ))
-
-        if data.create_role:
-            self.role_repo.save(Role(
-                name=f'{data.first_name}_{data.last_name}#creation_pgroup',
+        if data.can_access_panel:
+            role = self.role_repo.save(Role(
+                name=f'{data.first_name.lower()}_{data.last_name.lower()}_role',
                 permissions=[p.strip().lower() for p in data.permissions],
-                can_login=False,
+                can_login=True,
             ))
+
+            if data.create_role:
+                self.role_repo.save(Role(
+                    name=f'{data.first_name}_{data.last_name}#creation_pgroup',
+                    permissions=[p.strip().lower() for p in data.permissions],
+                    can_login=False,
+                ))
 
         user = User(
             role_id=role.id,
@@ -106,3 +107,6 @@ class UserService:
     def update(self, user: User) -> User | None:
         if self.user_repo.exists(user.id):
             return self.user_repo.save(user)
+        
+    def delete(self, id: int) -> bool:
+        return self.user_repo.delete_by_id(id)
