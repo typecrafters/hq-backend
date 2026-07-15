@@ -26,13 +26,49 @@ def mock_role_repo():
 
 
 @pytest.fixture
+def mock_token_repo():
+    return MagicMock()
+
+
+@pytest.fixture
 def mock_file_service():
     return MagicMock()
 
 
 @pytest.fixture
-def user_service(mock_user_repo, mock_role_repo, mock_file_service):
-    return UserService(user_repo=mock_user_repo, role_repo=mock_role_repo, file_service=mock_file_service)
+def mock_email_service():
+    return MagicMock()
+
+
+@pytest.fixture
+def mock_templating_service():
+    return MagicMock()
+
+
+@pytest.fixture
+def mock_crypto_service():
+    return MagicMock()
+
+
+@pytest.fixture
+def user_service(
+    mock_user_repo,
+    mock_role_repo,
+    mock_token_repo,
+    mock_file_service,
+    mock_email_service,
+    mock_templating_service,
+    mock_crypto_service,
+):
+    return UserService(
+        user_repo=mock_user_repo,
+        role_repo=mock_role_repo,
+        token_repo=mock_token_repo,
+        file_service=mock_file_service,
+        email_service=mock_email_service,
+        templating_service=mock_templating_service,
+        crypto_service=mock_crypto_service,
+    )
 
 
 class TestUserService:

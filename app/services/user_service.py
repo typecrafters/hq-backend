@@ -1,23 +1,53 @@
+from datetime import datetime, timedelta, timezone
+import secrets
+
+from app.config.settings import settings
+from app.core.util import Duration
 from app.models.role import Role
+from app.models.token import Token
 from app.models.user import User
 from app.repositories.role_repository import RoleRepository
+from app.repositories.token_repository import TokenRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.request.create_user import CreateUser
 from app.schemas.response.role import RoleResponse
 from app.schemas.response.user_with_role import UserWithRole
+from app.services.static.crypto_service import CryptoService
+from app.services.static.email_service import EmailService
 from app.services.static.file_service import FileService
 from app.services.static.password_service import PasswordService
+from app.services.static.templating_service import TemplatingService
 
 
 class UserService:
+    VERIFICATION_TOKEN_LENGTH = 32
+    EMAIL_TOKEN_AGE = timedelta(days=1)
+
     user_repo: UserRepository
     role_repo: RoleRepository
+    token_repo: TokenRepository
     file_service: type[FileService]
+    email_service: type[EmailService]
+    templating_service: type[TemplatingService]
+    crypto_service: type[CryptoService]
 
-    def __init__(self, user_repo: UserRepository, role_repo: RoleRepository, file_service: type[FileService]):
+    def __init__(
+        self,
+        user_repo: UserRepository,
+        role_repo: RoleRepository,
+        token_repo: TokenRepository,
+        file_service: type[FileService],
+        email_service: type[EmailService],
+        templating_service: type[TemplatingService],
+        crypto_service: type[CryptoService]
+    ):
         self.user_repo = user_repo
         self.role_repo = role_repo
+        self.token_repo = token_repo
         self.file_service = file_service
+        self.email_service = email_service
+        self.templating_service = templating_service
+        self.crypto_service = crypto_service
 
     def get_by_id(self, id: int, with_picture: bool = False) -> User | None:
         user = self.user_repo.get_by_id(id)
@@ -72,12 +102,33 @@ class UserService:
             last_name=data.last_name,
             title=data.title,
             email=data.email,
-            password=PasswordService.hash(data.password),
-            profile_picture_url=data.profile_picture_url,
+            profile_picture_url='system/placeholder.svg',
             show_on_page=data.show_on_page,
         )
 
         return self.user_repo.save(user)
+
+    def create_email_verification_token(self, user: User):
+        token = secrets.token_urlsafe(self.VERIFICATION_TOKEN_LENGTH)
+
+        now = datetime.now(timezone.utc)
+
+        self.token_repo.save(Token(
+            token_hash=self.crypto_service.sha256hash(token),
+            uid=user.id,
+            issued_at=now,
+            expires_at=now + self.EMAIL_TOKEN_AGE
+        ))
+
+        url = f"{settings.frontend_url}/auth/email/verify?token={token}"
+
+        html = self.templating_service.render('verify-email.html.j2').using({
+            'first_name': user.first_name,
+            'url': url,
+            'expires_in': Duration.readable(self.EMAIL_TOKEN_AGE)
+        })
+
+        self.email_service.send_html(user.email, 'Verify your email address', html)
 
     def load_by_id(self, id: int, with_picture: bool = False) -> UserWithRole | None:
         user = self.user_repo.get_by_id(id)

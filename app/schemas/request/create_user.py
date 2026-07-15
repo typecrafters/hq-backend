@@ -8,9 +8,7 @@ class CreateUser(BaseModel):
     last_name: str
     title: str
     email: str
-    password: str
     permissions: list[str]
     can_access_panel: bool
     create_role: bool
     show_on_page: bool
-    profile_picture_url: str

@@ -87,7 +87,7 @@ def send_reset_link(data: ForgotPassword, auth_service: RequiresAuthService, use
         user = user_service.get_by_email(data.email)
 
         if user:
-            auth_service.create_email_verification(user)
+            auth_service.create_pw_verification_token(user)
         else:
             time.sleep(1)
         return
@@ -104,6 +104,23 @@ def verify_token(auth_service: RequiresAuthService, token: str | None = None):
         if token is None:
             raise unauthorized
         result = auth_service.verify_token(token)
+
+        if not result:
+            raise unauthorized
+        return
+    except HTTPException as e:
+        raise e
+    except:
+        raise HTTPException(500, 'An unknown error occurred while verifying the token.')
+
+
+@router.get('/email/verify', status_code=204)
+def verify_email_token(auth_service: RequiresAuthService, token: str | None = None):
+    try:
+        unauthorized = HTTPException(401, 'Unauthorized.')
+        if token is None:
+            raise unauthorized
+        result = auth_service.verify_token(token, consume=True)
 
         if not result:
             raise unauthorized

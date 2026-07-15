@@ -79,7 +79,29 @@ class AuthService:
 
         return pysessid
     
-    def create_email_verification(self, user: User):
+    def create_pw_verification_token(self, user: User):
+        token = secrets.token_urlsafe(self.VERIFICATION_TOKEN_LENGTH)
+
+        now = datetime.now(timezone.utc)
+
+        self.token_repo.save(Token(
+            token_hash=self.crypto_service.sha256hash(token),
+            uid=user.id,
+            issued_at=now,
+            expires_at=now + self.PASSWORD_TOKEN_AGE
+        ))
+        
+        url = f"{settings.frontend_url}/auth/password/verify?token={token}"
+
+        html = self.templating_service.render('reset-password.html.j2').using({
+            'first_name': user.first_name,
+            'url': url,
+            'expires_in': Duration.readable(self.PASSWORD_TOKEN_AGE)
+        })
+
+        self.email_service.send_html(user.email, 'Verify your email address', html)
+
+    def create_pw_verification_token(self, user: User):
         token = secrets.token_urlsafe(self.VERIFICATION_TOKEN_LENGTH)
 
         now = datetime.now(timezone.utc)

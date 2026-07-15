@@ -113,8 +113,16 @@ RequiresTemplatingService = Annotated[type[TemplatingService], Depends(templatin
 
 # Services
 
-def get_user_service(user_repo: RequiresUserRepository, role_repo: RequiresRoleRepository, file_service: RequiresFileService) -> UserService:
-    return UserService(user_repo, role_repo, file_service)
+def get_user_service(
+    user_repo: RequiresUserRepository,
+    role_repo: RequiresRoleRepository,
+    token_repo: RequiresTokenRepository,
+    file_service: RequiresFileService,
+    email_service: RequiresEmailService,
+    templating_service: RequiresTemplatingService,
+    crypto_service: RequiresCryptoService
+) -> UserService:
+    return UserService(user_repo, role_repo, token_repo, file_service, email_service, templating_service, crypto_service)
 
 RequiresUserService = Annotated[UserService, Depends(get_user_service)]
 

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.dependencies import RequiresAuth, RequiresPasswordService, RequiresUserService
+from app.dependencies import RequiresAuth, RequiresPasswordService, RequiresUserService, RequiresAuthService
 from app.schemas.response.item_response import ItemResponse
 from app.schemas.response.list_response import ListResponse
 from app.schemas.request.create_user import CreateUser
@@ -41,12 +41,13 @@ def list_users(
 def save_user(
     user: CreateUser,
     user_service: RequiresUserService,
-    current: RequiresAuth,
+    current: RequiresAuth
 ):
     try:
         if not current.user.can('write:user'):
             raise HTTPException(403, 'Forbidden.')
         result = user_service.create(user)
+        user_service.create_email_verification_token(result)
         item = UserResponse.from_model(result)
         return ItemResponse(message='User created successfully', item=item)
     except HTTPException as e:
