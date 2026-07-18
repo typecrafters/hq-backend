@@ -10,7 +10,7 @@ from app.repositories.role_repository import RoleRepository
 from app.repositories.token_repository import TokenRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.request.create_user import CreateUser
-from app.schemas.response.role import RoleResponse
+from app.schemas.response.role_response import RoleResponse
 from app.schemas.response.user_with_role import UserWithRole
 from app.services.static.crypto_service import CryptoService
 from app.services.static.email_service import EmailService

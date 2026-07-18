@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.dependencies import RequiresAuth, RequiresPasswordService, RequiresUserService, RequiresAuthService
+from app.dependencies import RequiresAuth, RequiresPasswordService, RequiresUserService, RequiresAuthService, RequiresSessionRepository
 from app.schemas.response.item_response import ItemResponse
 from app.schemas.response.list_response import ListResponse
 from app.schemas.request.create_user import CreateUser
@@ -8,6 +8,7 @@ from app.schemas.request.update_user import UpdateUser
 from app.schemas.response.item_response import ItemResponse
 from app.schemas.response.user_with_role import UserWithRole
 from app.schemas.response.user_response import UserResponse
+from app.schemas.response.session import Session
 
 router = APIRouter(prefix='/users')
 
@@ -22,20 +23,61 @@ def list_users(
     payload = [UserResponse.from_model(u) for u in result]
     return ListResponse(message='Users retrieved', items=payload, meta={'count': len(payload)})
 
-@router.get('/{id}', response_model=ListResponse[UserResponse])
-def list_users(
+@router.get('/{id}', response_model=ItemResponse[UserWithRole])
+def get_by_id(
     id: int,
     user_service: RequiresUserService
 ):
     try:
-        result = user_service.get_by_id(id, with_picture=True)
-        payload = UserResponse.from_model(result)
-        return ItemResponse(message='Users retrieved', item=payload)
+        result = user_service.load_by_id(id, with_picture=True)
+        if result is None:
+            raise HTTPException(404, 'User not found.')
+        return ItemResponse(message='User retrieved successfully', item=result)
     except HTTPException as e:
         raise e
     except:
         raise HTTPException(
-            500, 'An unknown error occurred while updating the user.')
+            500, 'An unknown error occurred while retrieving the user.')
+
+@router.get('/{id}/sessions', response_model=ListResponse[Session])
+def get_user_sessions(
+    id: int,
+    current: RequiresAuth,
+    session_repo: RequiresSessionRepository
+):
+    try:
+        if not current.user.can('write:user'):
+            raise HTTPException(403, 'Forbidden.')
+        sessions = [Session.from_model(s) for s in session_repo.get_all_by_uid(id)]
+        return ListResponse(message='Session list found', items=sessions, meta={'count': len(sessions)})
+    except HTTPException as e:
+        raise e
+    except:
+        raise HTTPException(
+            500, 'An unknown error occurred while retrieving sessions.')
+
+@router.delete('/{id}/sessions/{hash}', status_code=204)
+def revoke_user_session(
+    id: int,
+    hash: str,
+    current: RequiresAuth,
+    session_repo: RequiresSessionRepository
+):
+    try:
+        if not current.user.can('write:user'):
+            raise HTTPException(403, 'Forbidden.')
+
+        session = session_repo.for_user_by_hash(id, hash)
+        if session is None:
+            raise HTTPException(404, 'Session not found.')
+
+        session_repo.delete_by_id(session.id)
+        return
+    except HTTPException as e:
+        raise e
+    except:
+        raise HTTPException(
+            500, 'An unknown error occurred while revoking the session.')
 
 @router.post('/', status_code=201, response_model=ItemResponse[UserResponse])
 def save_user(

@@ -1,7 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel
 
-from app.schemas.response.role import RoleResponse
+from app.schemas.response.role_response import RoleResponse
 
 class UserWithRole(BaseModel):
     id: int

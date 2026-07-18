@@ -11,7 +11,7 @@ import pytest
 from app.models.role import Role
 from app.models.user import User
 from app.schemas.request.create_user import CreateUser
-from app.schemas.response.role import RoleResponse
+from app.schemas.response.role_response import RoleResponse
 from app.services.user_service import UserService
 
 
