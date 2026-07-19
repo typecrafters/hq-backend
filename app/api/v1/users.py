@@ -17,8 +17,11 @@ router = APIRouter(prefix='/users')
 def list_users(
     page: int,
     limit: int,
+    current: RequiresAuth,
     user_service: RequiresUserService
 ):
+    if not current.user.can('read:user'):
+        raise HTTPException(403, 'Forbidden.')
     result = user_service.list(page, limit, with_picture=True)
     payload = [UserResponse.from_model(u) for u in result]
     return ListResponse(message='Users retrieved', items=payload, meta={'count': len(payload)})
@@ -26,9 +29,12 @@ def list_users(
 @router.get('/{id}', response_model=ItemResponse[UserWithRole])
 def get_by_id(
     id: int,
+    current: RequiresAuth,
     user_service: RequiresUserService
 ):
     try:
+        if not current.user.can('read:user'):
+            raise HTTPException(403, 'Forbidden.')
         result = user_service.load_by_id(id, with_picture=True)
         if result is None:
             raise HTTPException(404, 'User not found.')

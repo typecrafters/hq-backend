@@ -37,7 +37,7 @@ def _create_admin(args: list[str]):
         if role is None:
             role = Role(
                 name="admin",
-                permissions=["read:message", "write:message", "delete:message"],
+                permissions=["read:message", "write:message", "delete:message", "read:user", "write:user", "delete:user", "write:role", "write:media"],
                 can_login=True,
             )
             session.add(role)
