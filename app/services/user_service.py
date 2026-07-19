@@ -5,6 +5,7 @@ from app.config.settings import settings
 from app.core.util import Duration
 from app.models.role import Role
 from app.models.token import Token
+from app.models.token_type import TokenType
 from app.models.user import User
 from app.repositories.role_repository import RoleRepository
 from app.repositories.token_repository import TokenRepository
@@ -55,7 +56,7 @@ class UserService:
             return None
         if with_picture:
             self.user_repo.db.expunge(user)
-            user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+            user.profile_picture_url = self.file_service.sign_get(user.profile_picture_url)
         return user
 
     def get_by_email(self, email: str, with_picture: bool = False) -> User | None:
@@ -64,7 +65,7 @@ class UserService:
             return None
         if with_picture:
             self.user_repo.db.expunge(user)
-            user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+            user.profile_picture_url = self.file_service.sign_get(user.profile_picture_url)
         return user
 
     def list(self, page: int, limit: int, with_picture: bool = False) -> list[User]:
@@ -77,7 +78,7 @@ class UserService:
         if with_picture:
             for user in users:
                 self.user_repo.db.expunge(user)
-                user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+                user.profile_picture_url = self.file_service.sign_get(user.profile_picture_url)
 
         return users
 
@@ -115,6 +116,7 @@ class UserService:
 
         self.token_repo.save(Token(
             token_hash=self.crypto_service.sha256hash(token),
+            type=TokenType.EmailVerification,
             uid=user.id,
             issued_at=now,
             expires_at=now + self.EMAIL_TOKEN_AGE
@@ -140,7 +142,7 @@ class UserService:
         
         if with_picture:
             self.user_repo.db.expunge(user)
-            user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+            user.profile_picture_url = self.file_service.sign_get(user.profile_picture_url)
 
         return UserWithRole(
             id=user.id,

@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Response
 from app.dependencies import RequiresAuth, RequiresAuthService, RequiresClientInfo, RequiresSessionRepository, RequiresUserService
 from app.schemas.response.session import Session
@@ -8,6 +9,8 @@ from app.schemas.request.reset_password import ResetPassword
 from app.schemas.response.item_response import ItemResponse
 from app.schemas.response.list_response import ListResponse
 from app.schemas.response.me import Me
+from app.schemas.response.token_response import TokenResponse
+from app.models.token_type import TokenType
 
 router = APIRouter(prefix='/auth') 
 
@@ -98,12 +101,12 @@ def send_reset_link(data: ForgotPassword, auth_service: RequiresAuthService, use
 
 
 @router.get('/password/verify', status_code=204)
-def verify_token(auth_service: RequiresAuthService, token: str | None = None):
+def verify_pw_token(auth_service: RequiresAuthService, token: str | None = None):
     try:
         unauthorized = HTTPException(401, 'Unauthorized.')
         if token is None:
             raise unauthorized
-        result = auth_service.verify_token(token)
+        result = auth_service.verify_token(token, TokenType.PasswordReset)
 
         if not result:
             raise unauthorized
@@ -114,17 +117,23 @@ def verify_token(auth_service: RequiresAuthService, token: str | None = None):
         raise HTTPException(500, 'An unknown error occurred while verifying the token.')
 
 
-@router.get('/email/verify', status_code=204)
-def verify_email_token(auth_service: RequiresAuthService, token: str | None = None):
+@router.get('/email/verify', response_model=ItemResponse[TokenResponse])
+def verify_email_token(auth_service: RequiresAuthService, user_service: RequiresUserService, token: str | None = None):
     try:
         unauthorized = HTTPException(401, 'Unauthorized.')
         if token is None:
             raise unauthorized
-        result = auth_service.verify_token(token, consume=True)
+        result = auth_service.verify_token(token, TokenType.EmailVerification, consume=True)
 
         if not result:
             raise unauthorized
-        return
+
+        user = user_service.get_by_id(result.uid)
+        user.verified_at = datetime.now(timezone.utc)
+        user_service.update(user)
+
+        reset_token = auth_service.issue_pw_reset_token(user)
+        return ItemResponse(message='Email verified', item=TokenResponse(token=reset_token))
     except HTTPException as e:
         raise e
     except:
@@ -137,7 +146,7 @@ def update_user_password(data: ResetPassword, auth_service: RequiresAuthService,
         unauthorized = HTTPException(401, 'Unauthorized.')
         if token is None:
             raise unauthorized
-        result = auth_service.verify_token(token, consume=True)
+        result = auth_service.verify_token(token, TokenType.PasswordReset, consume=True)
 
         if not result:
             raise unauthorized

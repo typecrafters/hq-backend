@@ -25,7 +25,6 @@ dependencies = [
     # Loads configuration from .env files into Pydantic models.
     "pydantic-settings==2.14.2",
     # S3-compatible object storage client.
-    "minio==7.2.20",
     # Cryptographic primitives (AES, RSA, etc.).
     "pycryptodome>=3.23.0",
     # Alembic database migrations.
@@ -34,6 +33,7 @@ dependencies = [
     "jinja2>=3.1.6",
     # Job scheduling library
     "apscheduler>=3.11.3",
+    "boto3>=1.43.51",
 ]
 
 # ==============================================================================
