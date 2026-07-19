@@ -16,6 +16,7 @@ from app.schemas.internal.current import Current
 from app.schemas.response.session import Session as AppSession
 from app.services.auth_service import AuthService
 from app.services.message_service import MessageService
+from app.services.project_service import ProjectService
 from app.services.static.crypto_service import CryptoService
 from app.services.static.email_service import EmailService
 from app.services.static.file_service import FileService
@@ -156,8 +157,13 @@ def get_message_service(
 
 RequiresMessageService = Annotated[MessageService, Depends(get_message_service)]
 
+def get_project_service(project_repo: RequiresProjectRepository, file_service: RequiresFileService) -> ProjectService:
+    return ProjectService(project_repo, file_service)
 
-# Session 
+RequiresProjectService = Annotated[ProjectService, Depends(get_project_service)]
+
+
+# Session
 def get_current(session_repo: RequiresSessionRepository, user_service: RequiresUserService, crypto_service: RequiresCryptoService, pysessid: str | None = Cookie(default=None)) -> Current:
     unauthorized = HTTPException(401, 'Unauthorized.')
 

@@ -25,3 +25,4 @@ class Project(Base):
     tags: Mapped[list[str]] = mapped_column(Array(String), default=list)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     summary: Mapped[str] = mapped_column(String, nullable=False)
+    thumbnail_url: Mapped[str | None] = mapped_column(String, nullable=True)

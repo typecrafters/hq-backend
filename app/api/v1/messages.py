@@ -20,7 +20,7 @@ def get_all_messages(msg_service: RequiresMessageService, current: RequiresAuth,
         messages = msg_service.get_all(limit, offset, unread)
         total = msg_service.count_all(unread)
             
-        return ListResponse(message='Message found', items=messages, meta={'total': total, 'limit': limit, 'offset': offset})
+        return ListResponse(message='Messages found', items=messages, meta={'total': total, 'limit': limit, 'offset': offset})
     except HTTPException as e:
         raise e
     except:
