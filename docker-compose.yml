@@ -43,11 +43,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DB_HOST: db
-      DB_PORT: "5432"
-      DB_USER: postgres
-      DB_PASS: postgres
-      DB_NAME: hq
+      DB_URL: postgresql+psycopg://postgres:postgres@db:5432/hq
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
       FRONTEND_URL: "http://localhost:8000"
@@ -76,11 +72,7 @@ services:
       # inotify events from the host into the container via bind mounts.
       WATCHFILES_FORCE_POLLING: "true"
 
-      DB_HOST: db
-      DB_PORT: "5432"
-      DB_USER: postgres
-      DB_PASS: postgres
-      DB_NAME: hq
+      DB_URL: postgresql+psycopg://postgres:postgres@db:5432/hq
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
       FRONTEND_URL: "http://localhost:8000"
