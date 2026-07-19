@@ -1,9 +1,11 @@
 import uvicorn
+from pathlib import Path
+from alembic.config import Config
+from alembic import command
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app import api
 from app.config.settings import settings
-from app.db.session import create_db
 
 app = FastAPI()
 
@@ -17,6 +19,13 @@ app.add_middleware(
 
 app.include_router(api.router)
 
+
+def run_migrations() -> None:
+    alembic_ini = Path(__file__).resolve().parent.parent / "alembic.ini"
+    alembic_cfg = Config(str(alembic_ini))
+    command.upgrade(alembic_cfg, "head")
+
+
 if __name__ == '__main__':
-    create_db()
+    run_migrations()
     uvicorn.run('app.main:app', host='0.0.0.0', port=8000, reload=True)
