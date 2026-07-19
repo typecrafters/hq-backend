@@ -55,7 +55,7 @@ class UserService:
             return None
         if with_picture:
             self.user_repo.db.expunge(user)
-            user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+            user.profile_picture_url = self.file_service.sign_get(user.profile_picture_url)
         return user
 
     def get_by_email(self, email: str, with_picture: bool = False) -> User | None:
@@ -64,7 +64,7 @@ class UserService:
             return None
         if with_picture:
             self.user_repo.db.expunge(user)
-            user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+            user.profile_picture_url = self.file_service.sign_get(user.profile_picture_url)
         return user
 
     def list(self, page: int, limit: int, with_picture: bool = False) -> list[User]:
@@ -77,7 +77,7 @@ class UserService:
         if with_picture:
             for user in users:
                 self.user_repo.db.expunge(user)
-                user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+                user.profile_picture_url = self.file_service.sign_get(user.profile_picture_url)
 
         return users
 
@@ -140,7 +140,7 @@ class UserService:
         
         if with_picture:
             self.user_repo.db.expunge(user)
-            user.profile_picture_url = self.file_service.sign_download(user.profile_picture_url)
+            user.profile_picture_url = self.file_service.sign_get(user.profile_picture_url)
 
         return UserWithRole(
             id=user.id,

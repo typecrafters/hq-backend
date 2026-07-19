@@ -7,3 +7,4 @@ class SignUpload(BaseModel):
 
     key: str
     content_type: str
+    size: int
