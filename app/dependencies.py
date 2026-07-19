@@ -16,6 +16,7 @@ from app.schemas.internal.current import Current
 from app.schemas.response.session import Session as AppSession
 from app.services.auth_service import AuthService
 from app.services.message_service import MessageService
+from app.services.post_service import PostService
 from app.services.project_service import ProjectService
 from app.services.static.crypto_service import CryptoService
 from app.services.static.email_service import EmailService
@@ -156,6 +157,13 @@ def get_message_service(
     return MessageService(msg_repo, email_service, templating_service)
 
 RequiresMessageService = Annotated[MessageService, Depends(get_message_service)]
+
+def get_post_service(
+    post_repo: RequiresPostRepository
+) -> PostService:
+    return PostService(post_repo)
+
+RequiresPostService = Annotated[PostService, Depends(get_post_service)]
 
 def get_project_service(project_repo: RequiresProjectRepository, file_service: RequiresFileService) -> ProjectService:
     return ProjectService(project_repo, file_service)
