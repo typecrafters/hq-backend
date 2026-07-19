@@ -5,6 +5,7 @@ from app.config.settings import settings
 from app.core.util import Duration
 from app.models.role import Role
 from app.models.token import Token
+from app.models.token_type import TokenType
 from app.models.user import User
 from app.repositories.role_repository import RoleRepository
 from app.repositories.token_repository import TokenRepository
@@ -115,6 +116,7 @@ class UserService:
 
         self.token_repo.save(Token(
             token_hash=self.crypto_service.sha256hash(token),
+            type=TokenType.EmailVerification,
             uid=user.id,
             issued_at=now,
             expires_at=now + self.EMAIL_TOKEN_AGE

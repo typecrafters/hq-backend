@@ -57,7 +57,6 @@ class MessageService:
         now = datetime.now(timezone.utc)
         message = self.msg_repo.update(
             id,
-            read_at=now,
             replied_at=now,
             replied_by=uid,
             reply=reply

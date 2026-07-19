@@ -4,6 +4,7 @@ from app.config.settings import settings
 from app.core.util import Duration
 from app.models.session import Session
 from app.models.token import Token
+from app.models.token_type import TokenType
 from app.models.user import User
 from app.repositories.session_repository import SessionRepository
 from app.repositories.token_repository import TokenRepository
@@ -78,19 +79,25 @@ class AuthService:
         self.session_repo.save(session)
 
         return pysessid
-    
-    def create_pw_verification_token(self, user: User):
+
+    def issue_pw_reset_token(self, user: User) -> str:
         token = secrets.token_urlsafe(self.VERIFICATION_TOKEN_LENGTH)
 
         now = datetime.now(timezone.utc)
 
         self.token_repo.save(Token(
             token_hash=self.crypto_service.sha256hash(token),
+            type=TokenType.PasswordReset,
             uid=user.id,
             issued_at=now,
             expires_at=now + self.PASSWORD_TOKEN_AGE
         ))
-        
+
+        return token
+
+    def create_pw_verification_token(self, user: User):
+        token = self.issue_pw_reset_token(user)
+
         url = f"{settings.frontend_url}/auth/password/verify?token={token}"
 
         html = self.templating_service.render('reset-password.html.j2').using({
@@ -101,36 +108,17 @@ class AuthService:
 
         self.email_service.send_html(user.email, 'Verify your email address', html)
 
-    def create_pw_verification_token(self, user: User):
-        token = secrets.token_urlsafe(self.VERIFICATION_TOKEN_LENGTH)
-
-        now = datetime.now(timezone.utc)
-
-        self.token_repo.save(Token(
-            token_hash=self.crypto_service.sha256hash(token),
-            uid=user.id,
-            issued_at=now,
-            expires_at=now + self.PASSWORD_TOKEN_AGE
-        ))
-        
-        url = f"{settings.frontend_url}/auth/password/verify?token={token}"
-
-        html = self.templating_service.render('reset-password.html.j2').using({
-            'first_name': user.first_name,
-            'url': url,
-            'expires_in': Duration.readable(self.PASSWORD_TOKEN_AGE)
-        })
-
-        self.email_service.send_html(user.email, 'Verify your email address', html)
-
-    def verify_token(self, token: str, consume: bool = False) -> Token | None:
+    def verify_token(self, token: str, type: TokenType, consume: bool = False) -> Token | None:
         token_hash = self.crypto_service.sha256hash(token)
 
         saved_token = self.token_repo.get_by('token_hash', token_hash)
 
         if not saved_token:
             return None
-        
+
+        if saved_token.type != type:
+            return None
+
         now = datetime.now(timezone.utc)
 
         if saved_token.used_at is not None or saved_token.expires_at <= now:

@@ -22,7 +22,9 @@ from app.models.project import Project  # noqa: F401
 config = context.config
 
 # Override sqlalchemy.url from our settings
-config.set_main_option("sqlalchemy.url", settings.database_url())
+# ConfigParser applies %-interpolation, so literal % chars (e.g. from a
+# URL-encoded password) must be escaped as %% before being set.
+config.set_main_option("sqlalchemy.url", settings.db_url.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:

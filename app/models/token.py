@@ -9,6 +9,7 @@ class Token(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
     token_hash: Mapped[str] = mapped_column(String, index=True, unique=True, nullable=False)
+    type: Mapped[str] = mapped_column(String, index=True, nullable=False)
     uid: Mapped[int] = mapped_column(BigInteger, nullable=False)
     issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
