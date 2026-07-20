@@ -58,6 +58,9 @@ class UserService:
             self.user_repo.db.expunge(user)
             user.profile_picture_url = self.file_service.sign_get(user.profile_picture_url)
         return user
+    
+    def list_by_ids(self, ids: list[int]) -> list[User]:
+        return self.user_repo.list_by_ids(ids)
 
     def get_by_email(self, email: str, with_picture: bool = False) -> User | None:
         user = self.user_repo.get_by_email(email)

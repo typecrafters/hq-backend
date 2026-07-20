@@ -12,3 +12,6 @@ class UserRepository(Repository[User, int]):
         stmt = select(User).where(User.email == email).limit(1)
         return self.db.execute(stmt).scalar_one_or_none()
     
+    def list_by_ids(self, ids: list[int]) -> list[User]:
+        stmt = select(User).where(User.id.in_(ids))
+        return self.db.execute(stmt).scalars().all()

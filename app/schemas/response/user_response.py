@@ -1,5 +1,5 @@
-from datetime import datetime
 from typing import Self
+from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 from app.models.user import User
 

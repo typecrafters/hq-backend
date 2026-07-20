@@ -10,7 +10,7 @@ class ProjectStatus(enum.Enum):
     Planned = 'Planned'
     Review = 'Review'
     Archived = 'Archived'
-    Cancelled = 'Cancelled'
+    Canceled = 'Canceled'
 
 
 class Project(Base):

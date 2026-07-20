@@ -15,13 +15,17 @@ router = APIRouter(prefix='/users')
 
 @router.get('/', response_model=ListResponse[UserResponse])
 def list_users(
-    page: int,
-    limit: int,
     current: RequiresAuth,
-    user_service: RequiresUserService
+    user_service: RequiresUserService,
+    page: int | None = None,
+    limit: int | None = None
 ):
     if not current.user.can('read:user'):
         raise HTTPException(403, 'Forbidden.')
+    if not page:
+        page = 1
+    if not limit:
+        limit = 100
     result = user_service.list(page, limit, with_picture=True)
     payload = [UserResponse.from_model(u) for u in result]
     return ListResponse(message='Users retrieved', items=payload, meta={'count': len(payload)})
