@@ -6,6 +6,10 @@ Usage:
 Defaults:
     email:    admin@typecrafters.com
     password: Admin123!
+
+Idempotent: re-running is safe. If the admin role already exists, its
+permissions are synced (union) with the canonical list below — existing
+custom permissions are preserved. The user is created only if missing.
 """
 from datetime import datetime, timezone
 
@@ -21,15 +25,36 @@ from app.services.static.password_service import PasswordService
 DEFAULT_EMAIL = "admin@typecrafters.com"
 DEFAULT_PASSWORD = "Admin123!"
 
+CANONICAL_ADMIN_PERMISSIONS: list[str] = [
+    "read:message", "write:message", "delete:message",
+    "read:user", "write:user", "delete:user",
+    "read:role", "write:role",
+    "read:post", "write:post", "delete:post",
+    "read:project", "write:project", "delete:project",
+    "write:media",
+]
+
+
+def _sync_admin_role(session: Session, role: Role) -> None:
+    merged = sorted(set(role.permissions or []) | set(CANONICAL_ADMIN_PERMISSIONS))
+    if set(merged) != set(role.permissions or []):
+        added = sorted(set(merged) - set(role.permissions or []))
+        role.permissions = merged
+        session.flush()
+        if added:
+            print(f"  Role 'admin' permissions synced (added: {', '.join(added)})")
+        else:
+            print("  Role 'admin' permissions synced")
+
 
 def _create_admin(args: list[str]):
     email = args[0] if len(args) > 0 else DEFAULT_EMAIL
     password = args[1] if len(args) > 1 else DEFAULT_PASSWORD
 
-    engine = create_engine(settings.database_url())
+    engine = create_engine(settings.db_url)
 
     with Session(engine) as session:
-        # Create admin role if it doesn't exist
+        # Upsert admin role and sync its permissions to the canonical list.
         role = session.execute(
             select(Role).where(Role.name == "admin")
         ).scalar_one_or_none()
@@ -37,7 +62,7 @@ def _create_admin(args: list[str]):
         if role is None:
             role = Role(
                 name="admin",
-                permissions=["read:message", "write:message", "delete:message", "read:user", "write:user", "delete:user", "write:role", "write:media", "read:post", "write:post", "delete:post"],
+                permissions=list(CANONICAL_ADMIN_PERMISSIONS),
                 can_login=True,
             )
             session.add(role)
@@ -45,6 +70,7 @@ def _create_admin(args: list[str]):
             print(f"  Role 'admin' created (id={role.id})")
         else:
             print(f"  Role 'admin' exists (id={role.id})")
+            _sync_admin_role(session, role)
 
         # Check if user already exists
         existing = session.execute(
@@ -53,6 +79,7 @@ def _create_admin(args: list[str]):
 
         if existing is not None:
             print(f"  User '{email}' already exists (id={existing.id})")
+            session.commit()
             return
 
         # Create user

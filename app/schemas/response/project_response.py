@@ -1,16 +1,16 @@
 from datetime import datetime
-from typing import Self
 from pydantic import BaseModel, ConfigDict
-from app.models.user import User
-from app.models.project import Project, ProjectStatus
-from app.schemas.response.user_response import UserResponse
+
+from app.models.project import Project
+from app.models.project import ProjectStatus
+
 
 class ProjectResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     project_name: str
-    lead: UserResponse
+    project_lead: int
     status: ProjectStatus | None
     created_at: datetime
     updated_at: datetime | None
@@ -20,15 +20,18 @@ class ProjectResponse(BaseModel):
     thumbnail_url: str | None
 
     @classmethod
-    def from_model(cls, model: Project, lead: User) -> Self:
+    def from_model(cls, project: Project | None):
+        if project is None:
+            return None
         return cls(
-            id=model.id,
-            project_name=model.project_name,
-            lead=UserResponse.from_model(lead),
-            status=model.status,
-            created_at=model.created_at,
-            updated_at=model.updated_at,
-            description=model.description,
-            summary=model.summary,
-            thumnail_url=model.thumbnail_url
+            id=project.id,
+            project_name=project.project_name,
+            project_lead=project.project_lead,
+            status=project.status,
+            created_at=project.created_at,
+            updated_at=project.updated_at,
+            tags=project.tags or [],
+            description=project.description,
+            summary=project.summary,
+            thumbnail_url=project.thumbnail_url,
         )

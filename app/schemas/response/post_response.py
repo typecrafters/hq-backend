@@ -9,6 +9,8 @@ class PostResponse(BaseModel):
 
     id: int
     title: str
+    slug: str
+    lang: str
     author: int
     status: str | None
     created_at: datetime
@@ -23,6 +25,8 @@ class PostResponse(BaseModel):
         return cls(
             id=post.id,
             title=post.title,
+            slug=post.slug,
+            lang=post.lang,
             author=post.author,
             status=post.status.value if post.status else None,
             created_at=post.created_at,

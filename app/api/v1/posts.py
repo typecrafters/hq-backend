@@ -77,7 +77,9 @@ def create_post(
             author=current.user.id,
             content=data.content,
             status=data.status,
-            featured=data.featured
+            featured=data.featured,
+            slug=data.slug,
+            lang=data.lang,
         )
 
         return ItemResponse(message='Post created', item=PostResponse.from_model(post))
@@ -103,7 +105,9 @@ def update_post(
             title=data.title,
             content=data.content,
             status=data.status,
-            featured=data.featured
+            featured=data.featured,
+            slug=data.slug,
+            lang=data.lang,
         )
 
         if post is None:

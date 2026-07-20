@@ -136,6 +136,9 @@ __marimo__/
 .streamlit/secrets.toml
 
 .codebase-memory/
+.playwright-mcp/
+snapshot.yml
+*-snapshot.yml
 
 .env
 .env.*

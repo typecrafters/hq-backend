@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.dependencies import RequiresAuth, RequiresProjectService, RequiresUserService
+from app.dependencies import RequiresAuth, RequiresProjectService
 from app.schemas.request.create_project import CreateProject
 from app.schemas.request.update_project import UpdateProject
 from app.schemas.response.list_response import ListResponse
@@ -8,8 +8,14 @@ from app.schemas.response.project_response import ProjectResponse
 
 router = APIRouter(prefix='/projects')
 
+
 @router.get('/', response_model=ListResponse[ProjectResponse])
-def list_projects(project_service: RequiresProjectService, user_service: RequiresUserService, current: RequiresAuth, limit: int | None = None, offset: int | None = None):
+def list_projects(
+    project_service: RequiresProjectService,
+    current: RequiresAuth,
+    limit: int | None = None,
+    offset: int | None = None
+):
     try:
         if not current.user.can('read:project'):
             raise HTTPException(403, 'Forbidden.')
@@ -17,17 +23,16 @@ def list_projects(project_service: RequiresProjectService, user_service: Require
         offset = max(0, offset) if offset else 0
 
         projects = project_service.get_all(limit, offset, with_thumbnail=True)
-        users = user_service.list_by_ids([p.project_lead for p in projects])
-        users_by_id = {user.id: user for user in users}
-
         total = project_service.count()
 
+        items = [ProjectResponse.from_model(p) for p in projects]
+
         return ListResponse(
-            message='Projects found', 
-            items=[ProjectResponse.from_model(p, users_by_id[p.project_lead]) for p in projects], 
+            message='Projects found',
+            items=items,
             meta={
-                'total': total, 
-                'limit': limit, 
+                'total': total,
+                'limit': limit,
                 'offset': offset
             }
         )
@@ -38,33 +43,31 @@ def list_projects(project_service: RequiresProjectService, user_service: Require
 
 
 @router.get('/{id}', response_model=ItemResponse[ProjectResponse])
-def get_by_id(id: int, project_service: RequiresProjectService, user_service: RequiresUserService, current: RequiresAuth):
+def get_by_id(id: int, project_service: RequiresProjectService, current: RequiresAuth):
     try:
         if not current.user.can('read:project'):
             raise HTTPException(403, 'Forbidden.')
-        
+
         project = project_service.get_by_id(id, with_thumbnail=True)
-        user = user_service.get_by_id(project.project_lead)
 
         if project is None:
             raise HTTPException(404, 'Project not found')
-        
-        return ItemResponse(message='Project found', item=ProjectResponse.from_model(project, user))
+
+        return ItemResponse(message='Project found', item=ProjectResponse.from_model(project))
     except HTTPException as e:
         raise e
     except Exception:
         raise HTTPException(500, 'An unknown error occurred while trying to retrieve the project.')
 
 
-@router.post('/', response_model=ItemResponse[ProjectResponse])
-def create_project(data: CreateProject, project_service: RequiresProjectService, user_service: RequiresUserService, current: RequiresAuth):
+@router.post('/', status_code=201, response_model=ItemResponse[ProjectResponse])
+def create_project(data: CreateProject, project_service: RequiresProjectService, current: RequiresAuth):
     try:
         if not current.user.can('write:project'):
             raise HTTPException(403, 'Forbidden.')
-        
+
         project = project_service.create(data)
-        user = user_service.get_by_id(project.project_lead)
-        return ItemResponse(message='Project saved.', item=ProjectResponse.from_model(project, user))
+        return ItemResponse(message='Project saved.', item=ProjectResponse.from_model(project))
     except HTTPException as e:
         raise e
     except Exception:
@@ -72,15 +75,15 @@ def create_project(data: CreateProject, project_service: RequiresProjectService,
 
 
 @router.patch('/{id}', response_model=ItemResponse[ProjectResponse])
-def update_project(id: int, data: UpdateProject, project_service: RequiresProjectService, user_service: RequiresUserService, current: RequiresAuth):
+def update_project(id: int, data: UpdateProject, project_service: RequiresProjectService, current: RequiresAuth):
     try:
         if not current.user.can('write:project'):
             raise HTTPException(403, 'Forbidden.')
-        
+
         project = project_service.get_by_id(id)
         if not project:
             raise HTTPException(404, 'Project not found.')
-        
+
         if data.project_name is not None:
             project.project_name = data.project_name
         if data.project_lead is not None:
@@ -97,8 +100,7 @@ def update_project(id: int, data: UpdateProject, project_service: RequiresProjec
             project.thumbnail_url = data.thumbnail_url
 
         result = project_service.update(project)
-        user = user_service.get_by_id(result.project_lead)
-        return ItemResponse(message='Project updated.', item=ProjectResponse.from_model(result, user))
+        return ItemResponse(message='Project updated.', item=ProjectResponse.from_model(result))
 
     except HTTPException as e:
         raise e

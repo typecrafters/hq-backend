@@ -40,13 +40,13 @@ class ProjectService:
         data: CreateProject
     ) -> Project:
         tags = list(set(data.tags))
-        now = datetime(timezone.utc)
+        now = datetime.now(timezone.utc)
 
         project = Project(
             project_name=data.project_name,
             project_lead=data.project_lead,
             status=data.status,
-            created_at = now,
+            created_at=now,
             tags=tags,
             description=data.description,
             summary=data.summary,
@@ -54,10 +54,10 @@ class ProjectService:
         )
 
         return self.project_repo.save(project)
-    
+
     def update(self, project: Project) -> Project | None:
         if self.project_repo.exists(project.id):
-            return self.user_repo.save(project)
+            return self.project_repo.save(project)
 
     def delete(self, id: int) -> bool:
         project = self.project_repo.get_by_id(id)

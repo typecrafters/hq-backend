@@ -1,8 +1,8 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 from app.models.project import ProjectStatus
 
-class CreateProject(BaseModel): 
+class CreateProject(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     project_name: str
@@ -10,5 +10,5 @@ class CreateProject(BaseModel):
     summary: str
     description: str | None = None
     status: ProjectStatus
-    tags: list[str]
+    tags: list[str] = Field(default_factory=list)
     thumbnail_url: str | None = None
