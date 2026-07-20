@@ -34,6 +34,7 @@ dependencies = [
     # Job scheduling library
     "apscheduler>=3.11.3",
     "boto3>=1.43.51",
+    "cryptography>=49.0.0",
 ]
 
 # ==============================================================================

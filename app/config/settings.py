@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     cors_headers: str
     cors_credentials: bool
 
+    encryption_key: str | None = None # TODO make required
+
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(',') if o.strip()]
 
