@@ -85,6 +85,9 @@ class UserService:
 
         return users
 
+    def count(self) -> int:
+        return self.user_repo.count()
+
     def create(self, data: CreateUser) -> User:
         if data.can_access_panel:
             role = self.role_repo.save(Role(

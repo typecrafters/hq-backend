@@ -28,7 +28,12 @@ def list_users(
         limit = 100
     result = user_service.list(page, limit, with_picture=True)
     payload = [UserResponse.from_model(u) for u in result]
-    return ListResponse(message='Users retrieved', items=payload, meta={'count': len(payload)})
+    total = user_service.count()
+    return ListResponse(
+        message='Users retrieved',
+        items=payload,
+        meta={'count': len(payload), 'total': total, 'page': page, 'limit': limit}
+    )
 
 @router.get('/{id}', response_model=ItemResponse[UserWithRole])
 def get_by_id(
