@@ -32,6 +32,7 @@ CANONICAL_ADMIN_PERMISSIONS: list[str] = [
     "read:post", "write:post", "delete:post",
     "read:project", "write:project", "delete:project",
     "write:media",
+    "write:legal",
 ]
 
 

@@ -16,6 +16,7 @@ from app.models.token import Token  # noqa: F401
 from app.models.message import Message  # noqa: F401
 from app.models.post import Post  # noqa: F401
 from app.models.project import Project  # noqa: F401
+from app.models.legal_page import LegalPage  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

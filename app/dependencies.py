@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import engine
 from app.repositories.message_repository import MessageRepository
+from app.repositories.legal_page_repository import LegalPageRepository
 from app.repositories.post_repository import PostRepository
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.role_repository import RoleRepository
@@ -16,6 +17,7 @@ from app.schemas.internal.current import Current
 from app.schemas.response.session import Session as AppSession
 from app.services.auth_service import AuthService
 from app.services.message_service import MessageService
+from app.services.legal_page_service import LegalPageService
 from app.services.post_service import PostService
 from app.services.project_service import ProjectService
 from app.services.static.crypto_service import CryptoService
@@ -64,6 +66,11 @@ def get_project_repository(db: RequiresDBSession) -> ProjectRepository:
     return ProjectRepository(db=db)
 
 RequiresProjectRepository = Annotated[ProjectRepository, Depends(get_project_repository)]
+
+def get_legal_page_repository(db: RequiresDBSession) -> LegalPageRepository:
+    return LegalPageRepository(db=db)
+
+RequiresLegalPageRepository = Annotated[LegalPageRepository, Depends(get_legal_page_repository)]
 
 def get_role_repository(db: RequiresDBSession) -> RoleRepository:
     return RoleRepository(db=db)
@@ -164,6 +171,13 @@ def get_post_service(
     return PostService(post_repo)
 
 RequiresPostService = Annotated[PostService, Depends(get_post_service)]
+
+def get_legal_page_service(
+    legal_page_repo: RequiresLegalPageRepository
+) -> LegalPageService:
+    return LegalPageService(legal_page_repo)
+
+RequiresLegalPageService = Annotated[LegalPageService, Depends(get_legal_page_service)]
 
 def get_project_service(project_repo: RequiresProjectRepository, file_service: RequiresFileService) -> ProjectService:
     return ProjectService(project_repo, file_service)
