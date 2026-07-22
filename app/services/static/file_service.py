@@ -19,9 +19,13 @@ class FileService:
                 raise RuntimeError(
                     'S3 endpoint is not configured. Set S3_ENDPOINT env var.'
                 )
+            endpoint_url = settings.s3_endpoint
+            if '://' not in endpoint_url:
+                scheme = 'https' if settings.s3_secure else 'http'
+                endpoint_url = f'{scheme}://{endpoint_url}'
             cls._client = boto3_client(
                 's3',
-                endpoint_url=settings.s3_endpoint,
+                endpoint_url=endpoint_url,
                 aws_access_key_id=settings.s3_access_key,
                 aws_secret_access_key=settings.s3_secret_key,
                 config=Config(signature_version='s3v4')
