@@ -12,13 +12,10 @@ router = APIRouter(prefix='/projects')
 @router.get('/', response_model=ListResponse[ProjectResponse])
 def list_projects(
     project_service: RequiresProjectService,
-    current: RequiresAuth,
     limit: int | None = None,
     offset: int | None = None
 ):
     try:
-        if not current.user.can('read:project'):
-            raise HTTPException(403, 'Forbidden.')
         limit = min(max(1, limit), 50) if limit else 50
         offset = max(0, offset) if offset else 0
 

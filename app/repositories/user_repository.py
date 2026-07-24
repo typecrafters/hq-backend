@@ -8,6 +8,10 @@ class UserRepository(Repository[User, int]):
     def __init__(self, db: Session):
         super().__init__(db, User)
 
+    def get_all_shown(self) -> list[User]:
+        stmt = select(User).where(User.show_on_page == True)
+        return self.db.execute(stmt).scalars().all()
+
     def get_by_email(self, email: str) -> User | None:
         stmt = select(User).where(User.email == email).limit(1)
         return self.db.execute(stmt).scalar_one_or_none()

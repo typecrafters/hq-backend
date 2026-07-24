@@ -85,6 +85,16 @@ class UserService:
 
         return users
 
+    def list_shown(self) -> list[User]:
+        users = self.user_repo.get_all_shown()
+        for user in users:
+            self.user_repo.db.expunge(user)
+            user.profile_picture_url = self.file_service.sign_get(user.profile_picture_url)
+        return users
+
+    def count(self) -> int:
+        return self.user_repo.count()
+
     def create(self, data: CreateUser) -> User:
         if data.can_access_panel:
             role = self.role_repo.save(Role(
