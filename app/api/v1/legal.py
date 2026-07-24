@@ -13,17 +13,12 @@ def get_legal_page(
     slug: str,
     legal_page_service: RequiresLegalPageService
 ):
-    try:
-        page = legal_page_service.get_by_slug(slug)
+    page = legal_page_service.get_by_slug(slug)
+    
+    if page is None:
+        raise HTTPException(404, 'Legal page not found.')
 
-        if page is None:
-            raise HTTPException(404, 'Legal page not found.')
-
-        return ItemResponse(message='Legal page retrieved', item=LegalPageResponse.from_model(page))
-    except HTTPException as e:
-        raise e
-    except:
-        raise HTTPException(500, 'An unknown error occurred while retrieving the legal page.')
+    return ItemResponse(message='Legal page retrieved', item=LegalPageResponse.from_model(page))
 
 
 @router.patch('/{slug}', response_model=ItemResponse[LegalPageResponse])
@@ -33,21 +28,16 @@ def update_legal_page(
     current: RequiresAuth,
     legal_page_service: RequiresLegalPageService
 ):
-    try:
-        if not current.user.can('write:legal'):
-            raise HTTPException(403, 'Forbidden.')
+    if not current.user.can('write:legal'):
+        raise HTTPException(403, 'Forbidden.')
 
-        page = legal_page_service.update(
-            slug,
-            title=data.title,
-            content_markdown=data.content_markdown,
-        )
+    page = legal_page_service.update(
+        slug,
+        title=data.title,
+        content_markdown=data.content_markdown,
+    )
 
-        if page is None:
-            raise HTTPException(404, 'Legal page not found.')
+    if page is None:
+        raise HTTPException(404, 'Legal page not found.')
 
-        return ItemResponse(message='Legal page updated', item=LegalPageResponse.from_model(page))
-    except HTTPException as e:
-        raise e
-    except:
-        raise HTTPException(500, 'An unknown error occurred while updating the legal page.')
+    return ItemResponse(message='Legal page updated', item=LegalPageResponse.from_model(page))

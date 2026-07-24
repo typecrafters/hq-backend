@@ -10,26 +10,17 @@ router = APIRouter(prefix='/roles')
 
 @router.patch('/{id}', status_code=200, response_model=ItemResponse[RoleResponse])
 def update_role(id: int, data: UpdateRole, current: RequiresAuth, role_repo: RequiresRoleRepository):
-    try:
-        if not current.user.can('write:role'):
-            raise HTTPException(403, 'Forbidden.')
+    if not current.user.can('write:role'):
+        raise HTTPException(403, 'Forbidden.')
 
-        role = role_repo.get_by_id(id)
-        if not role:
-            raise HTTPException(404, 'Role not found.')
+    role = role_repo.get_by_id(id)
+    if not role:
+        raise HTTPException(404, 'Role not found.')
 
-        if data.name is not None:
-            role.name = data.name
-        if data.permissions is not None:
-            role.permissions = data.permissions
-        if data.can_login is not None:
-            role.can_login = data.can_login
+    for key, value in data.model_dump(exclude_none=True).items():
+        setattr(role, key, value)
 
-        role_repo.save(role)
+    role_repo.save(role)
 
-        item = RoleResponse.from_model(role)
-        return ItemResponse(message='Role updated successfully', item=item)
-    except HTTPException as e:
-        raise e
-    except Exception:
-        raise HTTPException(500, 'An unknown error occurred while updating the role.')
+    item = RoleResponse.from_model(role)
+    return ItemResponse(message='Role updated successfully', item=item)
