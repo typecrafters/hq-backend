@@ -42,6 +42,26 @@ uv run python app/manage.py create-admin
 uv run python app/manage.py create-admin otro@email.com mi.password
 ```
 
+### seed-legal-pages
+
+Inserta o actualiza las páginas legales por defecto (privacy policy, terms of
+service) con su contenido markdown. Idempotente: re-ejecutar actualiza el
+contenido si cambió.
+
+```bash
+uv run python app/manage.py seed-legal-pages
+```
+
+### seed-messages
+
+Inserta mensajes de contacto mock para testing.
+
+```bash
+uv run python app/manage.py seed-messages                # insertar todos
+uv run python app/manage.py seed-messages --mark-read 3 # marcar los primeros 3 como leídos
+uv run python app/manage.py seed-messages --clear       # borrar todos los mensajes antes de insertar
+```
+
 ## Agregar un nuevo comando
 
 1. Creá un archivo `.py` en `app/commands/`:
