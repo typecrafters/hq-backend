@@ -55,7 +55,7 @@ from app.config.settings import settings
 
 
 def _seed(args):
-    engine = create_engine(settings.database_url())
+    engine = create_engine(settings.db_url)
     with Session(engine) as session:
         # tu lógica acá
         print("Datos insertados")
