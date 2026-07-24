@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import IntegrityError
 from app.dependencies import RequiresAuth, RequiresProjectService
 from app.schemas.request.create_project import CreateProject
 from app.schemas.request.update_project import UpdateProject
@@ -67,6 +68,8 @@ def create_project(data: CreateProject, project_service: RequiresProjectService,
         return ItemResponse(message='Project saved.', item=ProjectResponse.from_model(project))
     except HTTPException as e:
         raise e
+    except IntegrityError as e:
+        raise HTTPException(422, f'Project violates a database constraint: {e.orig}') from e
     except Exception:
         raise HTTPException(500, 'An unknown error occurred while trying to create the project.')
 

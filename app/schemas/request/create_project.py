@@ -6,7 +6,7 @@ class CreateProject(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     project_name: str
-    project_lead: int | None = None
+    project_lead: int
     summary: str
     description: str | None = None
     status: ProjectStatus
