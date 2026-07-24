@@ -25,15 +25,8 @@ dependencies = [
     # Loads configuration from .env files into Pydantic models.
     "pydantic-settings==2.14.2",
     # S3-compatible object storage client.
-    # Cryptographic primitives (AES, RSA, etc.).
-    "pycryptodome>=3.23.0",
-    # Alembic database migrations.
-    "alembic>=1.18.5",
-    # Templating engine - HTML emails.
-    "jinja2>=3.1.6",
-    # Job scheduling library
-    "apscheduler>=3.11.3",
     "boto3>=1.43.51",
+    # Cryptographic primitives (AES-GCM) for token/data encryption.
     "cryptography>=49.0.0",
 ]
 

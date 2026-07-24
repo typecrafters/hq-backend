@@ -35,11 +35,36 @@ El número de revisión se asigna automáticamente (incremental).
 Crea un usuario administrador en la base de datos.
 
 ```bash
-# Valores por defecto: admin@typecrafters.com / Admin123!
+# Si no se pasa nada, se generan email y password aleatorios.
+# Se imprimen una sola vez — guardalos en el momento.
 uv run python app/manage.py create-admin
 
 # Con email y password custom
 uv run python app/manage.py create-admin otro@email.com mi.password
+```
+
+> No existen credenciales por defecto hardcoded. Siempre pasalas como
+> argumentos o dejá que el comando genere ambas de forma aleatoria.
+> Guardá las credenciales generadas en el momento — no se vuelven a mostrar.
+
+### seed-legal-pages
+
+Inserta o actualiza las páginas legales por defecto (privacy policy, terms of
+service) con su contenido markdown. Idempotente: re-ejecutar actualiza el
+contenido si cambió.
+
+```bash
+uv run python app/manage.py seed-legal-pages
+```
+
+### seed-messages
+
+Inserta mensajes de contacto mock para testing.
+
+```bash
+uv run python app/manage.py seed-messages                # insertar todos
+uv run python app/manage.py seed-messages --mark-read 3 # marcar los primeros 3 como leídos
+uv run python app/manage.py seed-messages --clear       # borrar todos los mensajes antes de insertar
 ```
 
 ## Agregar un nuevo comando
@@ -55,7 +80,7 @@ from app.config.settings import settings
 
 
 def _seed(args):
-    engine = create_engine(settings.database_url())
+    engine = create_engine(settings.db_url)
     with Session(engine) as session:
         # tu lógica acá
         print("Datos insertados")

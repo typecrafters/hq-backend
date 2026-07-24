@@ -73,8 +73,11 @@ uv run uvicorn app.main:app --reload
 | **pydantic** | Validación de datos. Define schemas de request/response con tipos y reglas. |
 | **pydantic-settings** | Carga configuración desde `.env` en la clase `Settings` (`app/config/settings.py`). |
 | **argon2-cffi** | Hashing de contraseñas con Argon2id (estándar OWASP). |
-| **minio** | Cliente S3 para subir/leer archivos de object storage. |
-| **pycryptodome** | Criptografía simétrica y asimétrica (AES, RSA, etc.). |
+| **boto3** | Cliente S3 / AWS para subir y leer archivos de object storage (S3, MinIO, etc.). |
+| **cryptography** | Criptografía simétrica (AES-GCM) para cifrar tokens y datos sensibles. |
+| **alembic** | Migraciones de base de datos para SQLAlchemy. |
+| **jinja2** | Motor de plantillas para generar HTML de emails. |
+| **apscheduler** | Programación de jobs en background (cleanup de sesiones, etc.). |
 
 ### Desarrollo
 

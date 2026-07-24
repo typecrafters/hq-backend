@@ -39,7 +39,7 @@ def _seed_messages(args: list[str]):
     parser.add_argument("--clear", action="store_true", help="Delete all messages first")
     parsed = parser.parse_args(args)
 
-    engine = create_engine(settings.database_url())
+    engine = create_engine(settings.db_url)
 
     with Session(engine) as session:
         if parsed.clear:

@@ -3,14 +3,16 @@
 Usage:
     uv run python app/manage.py create-admin [email] [password]
 
-Defaults:
-    email:    admin@typecrafters.com
-    password: Admin123!
+If email and password are omitted, both are randomly generated and printed
+once at creation time. There are no hardcoded default credentials — passing
+nothing is safe, but you must save the printed credentials immediately.
 
 Idempotent: re-running is safe. If the admin role already exists, its
 permissions are synced (union) with the canonical list below — existing
 custom permissions are preserved. The user is created only if missing.
 """
+import secrets
+import string
 from datetime import datetime, timezone
 
 from sqlalchemy import create_engine, select
@@ -22,8 +24,11 @@ from app.models.user import User
 from app.services.static.password_service import PasswordService
 
 
-DEFAULT_EMAIL = "admin@typecrafters.com"
-DEFAULT_PASSWORD = "Admin123!"
+_EMAIL_LOCAL_LENGTH = 12
+_EMAIL_DOMAIN = "typecrafters.com"
+_PASSWORD_ALPHABET = string.ascii_letters + string.digits + "!@#$%^&*"
+_PASSWORD_LENGTH = 20
+
 
 CANONICAL_ADMIN_PERMISSIONS: list[str] = [
     "read:message", "write:message", "delete:message",
@@ -34,6 +39,18 @@ CANONICAL_ADMIN_PERMISSIONS: list[str] = [
     "write:media",
     "write:legal",
 ]
+
+
+def _generate_email(local_length: int = _EMAIL_LOCAL_LENGTH, domain: str = _EMAIL_DOMAIN) -> str:
+    """Generate a random admin email like 'adm-k7q9x2p4r8@typecrafters.com'."""
+    alphabet = string.ascii_lowercase + string.digits
+    local = "adm-" + "".join(secrets.choice(alphabet) for _ in range(local_length))
+    return f"{local}@{domain}"
+
+
+def _generate_password(length: int = _PASSWORD_LENGTH) -> str:
+    """Generate a cryptographically secure random password."""
+    return "".join(secrets.choice(_PASSWORD_ALPHABET) for _ in range(length))
 
 
 def _sync_admin_role(session: Session, role: Role) -> None:
@@ -49,8 +66,19 @@ def _sync_admin_role(session: Session, role: Role) -> None:
 
 
 def _create_admin(args: list[str]):
-    email = args[0] if len(args) > 0 else DEFAULT_EMAIL
-    password = args[1] if len(args) > 1 else DEFAULT_PASSWORD
+    generated_email = False
+    if len(args) > 0:
+        email = args[0]
+    else:
+        email = _generate_email()
+        generated_email = True
+
+    generated_password = False
+    if len(args) > 1:
+        password = args[1]
+    else:
+        password = _generate_password()
+        generated_password = True
 
     engine = create_engine(settings.db_url)
 
@@ -100,12 +128,17 @@ def _create_admin(args: list[str]):
         print(f"\n  Admin user created!")
         print(f"  Email:    {email}")
         print(f"  Password: {password}")
+        if generated_email or generated_password:
+            print(
+                "  (credentials were randomly generated — save them now, "
+                "they will not be shown again)"
+            )
         print(f"  User ID:  {user.id}")
 
 
 def register(registry):
     registry.add(
         name="create-admin",
-        help="Create an admin user (default: admin@typecrafters.com / Admin123!)",
+        help="Create an admin user (random email and password if not provided)",
         fn=_create_admin,
     )

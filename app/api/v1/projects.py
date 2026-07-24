@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import IntegrityError
 from app.dependencies import RequiresAuth, RequiresProjectService
 from app.schemas.request.create_project import CreateProject
 from app.schemas.request.update_project import UpdateProject
