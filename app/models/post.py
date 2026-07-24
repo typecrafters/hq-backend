@@ -1,4 +1,4 @@
-import enum
+from enum import StrEnum
 from datetime import datetime, timezone
 from sqlalchemy import BigInteger, Boolean, DateTime, Enum, ForeignKey, Identity, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
@@ -6,10 +6,10 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
 
-class PostStatus(enum.Enum):
-    Published = 'Published'
-    Draft = 'Draft'
-    Archived = 'Archived'
+class PostStatus(StrEnum):
+    Published = 'published'
+    Draft = 'draft'
+    Archived = 'archived'
 
 
 class Post(Base):

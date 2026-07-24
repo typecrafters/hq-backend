@@ -1,16 +1,16 @@
-import enum
+from enum import StrEnum
 from datetime import datetime, timezone
 from sqlalchemy import ARRAY as Array, BigInteger, DateTime, Enum, ForeignKey, Identity, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 
 
-class ProjectStatus(enum.Enum):
-    Development = 'Development'
-    Planned = 'Planned'
-    Review = 'Review'
-    Archived = 'Archived'
-    Canceled = 'Canceled'
+class ProjectStatus(StrEnum):
+    Development = 'development'
+    Planned = 'planned'
+    Review = 'review'
+    Archived = 'archived'
+    Canceled = 'canceled'
 
 
 class Project(Base):

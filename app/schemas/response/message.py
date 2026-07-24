@@ -1,5 +1,7 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, computed_field
+from pydantic import BaseModel, ConfigDict
+
+from app.models.message import MessageStatus
 
 class MessageResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -14,12 +16,4 @@ class MessageResponse(BaseModel):
     replied_by: int | None
     reply: str | None
     archived_at: datetime | None
-
-    @computed_field
-    @property
-    def status(self) -> str:
-        if self.read_at is None:
-            return 'Received'
-        if self.replied_at is None:
-            return 'Read'
-        return 'Replied'
+    status: MessageStatus

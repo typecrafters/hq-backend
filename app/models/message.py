@@ -1,7 +1,13 @@
 from datetime import datetime, timezone
+from enum import StrEnum
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Identity, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
+
+class MessageStatus(StrEnum):
+    Received = 'received'
+    Read = 'read'
+    Replied = 'replied'
 
 
 class Message(Base):
@@ -17,3 +23,12 @@ class Message(Base):
     replied_by: Mapped[int | None] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=True)
     reply: Mapped[str] = mapped_column(Text, nullable=True)
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    @property
+    def status(self) -> MessageStatus:
+        if self.replied_at:
+            return MessageStatus.Replied
+        elif self.read_at:
+            return MessageStatus.Read
+        
+        return MessageStatus.Received
