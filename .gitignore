@@ -144,3 +144,4 @@ snapshot.yml
 .env.*
 !.env.example
 TypeCrafters-Design-System.md
+.vscode/settings.json
